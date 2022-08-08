@@ -8,6 +8,7 @@ import styled from "styled-components";
 import TimeAgo from "react-timeago";
 import prettyBytes from "pretty-bytes";
 import debounce from "lodash/debounce";
+import getConfig from "next/config";
 
 import Pagination from "../components/Pagination";
 import ClipfaceLayout from "../components/ClipfaceLayout";
@@ -15,6 +16,8 @@ import CopyClipLink from "../components/CopyClipLink";
 import useLocalSettings from "../localSettings";
 import requireAuth from "../backend/requireAuth";
 import Container from "../components/Container";
+
+const { publicRuntimeConfig } = getConfig();
 
 const ClearFilterButton = styled.span`
   cursor: pointer;
@@ -59,6 +62,7 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
 
   // Focus filter box on load
   useEffect(() => {
+    document.title = publicRuntimeConfig.pageTitle;
     filterBox.current.focus();
   }, []);
 

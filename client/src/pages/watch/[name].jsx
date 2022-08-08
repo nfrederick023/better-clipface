@@ -25,6 +25,10 @@ const ButtonRow = styled.div`
   align-items: center;
   gap: 5px;
   padding-bottom: 10px;
+  
+  .is-info{
+    background-color: #3273dc !important;
+  }
 `;
 
 const BackLink = styled.a`

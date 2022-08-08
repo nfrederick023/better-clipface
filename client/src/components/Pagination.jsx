@@ -11,6 +11,10 @@ const PaginationBar = styled.div`
   margin: 10px 0px;
   margin-bottom: 10px;
   border-radius: 2px;
+
+  .is-current{
+    background-color: #3273dc !important;
+  }
 `;
 
 const SubmenuButton = styled.div`

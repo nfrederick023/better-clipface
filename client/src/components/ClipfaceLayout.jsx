@@ -3,14 +3,17 @@
  */
 
 import { useRouter } from "next/router";
+import { Helmet } from "react-helmet";
+import Toggle from "react-toggle";
+import useLocalSettings from "../localSettings";
 import styled from "styled-components";
 import getConfig from "next/config";
 import Container from "./Container";
+import "react-toggle/style.css";
 
 const { publicRuntimeConfig } = getConfig();
 
 const Header = styled.header`
-  background-image: url(/img/header-background.jpg);
   background-size: 1920px auto;
   background-position: center center;
   background-repeat: no-repeat;
@@ -27,7 +30,22 @@ const NavbarMenu = styled.div`
   flex: 1;
   display: flex;
   justify-content: end;
-`
+
+  .react-toggle {
+   right: 10px;
+  }
+  .react-toggle--checked:hover .react-toggle-track {
+    background-color: #3273dc !important;
+  }
+
+  .react-toggle--checked .react-toggle-track {
+    background-color: #3273dc !important;
+  }
+
+  .react-toggle-thumb {
+    box-shadow: 0px 0px 0px 0px #3273dc !important;
+  }
+`;
 
 const ApplicationDiv = styled.div`
   padding: 50px 0;
@@ -72,6 +90,11 @@ const Footer = styled.footer`
   }
 `;
 
+const HeaderTitle = styled.h1`
+  font-weight: 800;
+  font-size: 1.5rem;
+`;
+
 export function ClipfaceLayout({
   children,
   authInfo = { status: "NOT_AUTHENTICATED" },
@@ -80,7 +103,15 @@ export function ClipfaceLayout({
   pageSubtitle = null,
 }) {
   const router = useRouter();
-  const contentClassName = pageName ? `page-${pageName}` : '';
+  const contentClassName = pageName ? `page-${pageName}` : "";
+  const [localSettings, setLocalSettings] = useLocalSettings();
+
+  const toggleDarkMode = () => {
+    setLocalSettings({
+      ...localSettings,
+      isDarkmode: !localSettings.isDarkmode,
+    });
+  };
 
   const onSignOut = () => {
     logout().then((ok) => {
@@ -94,16 +125,39 @@ export function ClipfaceLayout({
 
   return (
     <>
+      {localSettings.isDarkmode ? (
+        <Helmet
+          link={[
+            {
+              rel: "stylesheet",
+              href: "https://unpkg.com/bulma-prefers-dark",
+              integrity:
+                "sha384-5kFoflEnYHUHkE+dDg8wj1wdx9k9JELPWJmnxlCwjl0mA7YdbfQfR0TQTsKrvQiW",
+              crossOrigin: "anonymous",
+            },
+          ]}
+        >
+          <body style="background-color: #050505;"></body>
+        </Helmet>
+      ) : (
+        <Helmet></Helmet>
+      )}
       <section className="hero is-dark">
         <Header className="hero-head">
           <nav>
             <NavbarContainer>
               <a href="/">
-                <h1 className="title is-4">
+                <HeaderTitle class="title is-4">
                   {publicRuntimeConfig.headerTitle}
-                </h1>
+                </HeaderTitle>
               </a>
               <NavbarMenu>
+                <Toggle
+                  icons={false}
+                  defaultChecked={localSettings.isDarkmode}
+                  checked={localSettings.isDarkmode}
+                  onChange={toggleDarkMode}
+                />
                 {authInfo.status == "AUTHENTICATED" && (
                   <a onClick={onSignOut}>
                     Log out
@@ -131,9 +185,9 @@ export function ClipfaceLayout({
 
       <Footer>
         <div className="container">
-          <a href="https://github.com/Hubro/clipface" target="_blank">
+          {/* <a href="https://github.com/Hubro/clipface" target="_blank">
             <i class="fab fa-github"></i> Clipface
-          </a>
+          </a> */}
         </div>
       </Footer>
     </>

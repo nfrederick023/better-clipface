@@ -1,15 +1,14 @@
 /*
  * Custom app component, used to redirect if authentication is missing
  */
-
+import React, { useEffect } from 'react';
 import * as cookie from "cookie";
 import { createGlobalStyle } from "styled-components";
-
 import { setLocalSettings } from "../localSettings";
 
 const GlobalStyle = createGlobalStyle`
   html {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
   }
 
   body {
@@ -22,6 +21,7 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 function MyApp({ Component, pageProps }) {
+
   return (
     <>
       <GlobalStyle />

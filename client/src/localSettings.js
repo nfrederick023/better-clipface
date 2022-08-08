@@ -36,6 +36,7 @@ const initLocalSettings = () => {
   if (!globalSettings.theaterMode) globalSettings.theaterMode = false;
   if (!globalSettings.videoVolume) globalSettings.videoVolume = 1;
   if (!globalSettings.clipsPerPage) globalSettings.clipsPerPage = 40;
+  if (!globalSettings.isDarkmode) globalSettings.clipsPerPage = true;
 
   saveLocalSettings();
 };
@@ -78,7 +79,6 @@ export const useLocalSettings = () => {
 };
 
 export const setLocalSettings = (settings) => {
-  console.log("Local settings set to", settings);
   Object.assign(globalSettings, settings);
 };
 

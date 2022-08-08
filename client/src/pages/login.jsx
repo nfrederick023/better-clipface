@@ -21,6 +21,7 @@ const Form = styled.form`
 `;
 
 const LoginButton = styled.button`
+  background-color: #3273dc !important;
   width: 100%;
   height: 48px;
 `;
