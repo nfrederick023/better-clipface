@@ -61,23 +61,23 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
   const [filter, setFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [localSettings, setLocalSettings] = useLocalSettings();
-  const [clips, setClips] = useState(videos)
+  const [clips, setClips] = useState([])
+  const [clipList, setclipList] = useState([])
   const [selectedSort, setSelectedSort] = useState('')
   const [selectedOrder, setSelectedOrder] = useState(true)
   const filterBox = useRef();
-  console.log(currentPage);
 
   // Focus filter box on load
   useEffect(() => {
     filterBox.current.focus();
-    sortClips("size")
+
   }, []);
 
 
   const sortClips = (sortBy) => {
     let order;
 
-    if (sortBy == selectedSort && selectedOrder == true) {
+    if (sortBy == selectedSort && selectedOrder) {
       setSelectedOrder(false);
       order = false;
     } else {
@@ -91,21 +91,40 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
       return b[sortBy] - a[sortBy]
     })
 
-    if (order == true) {
+    if (order) {
       sorted = sorted.reverse();
     }
 
+    setClips(sorted);
+    sorted = getPage(sorted, currentPage);
+    setclipList(sorted);
+  }
+
+
+  const updatePage = (pageNumber) => {
+    setclipList(getPage(clips, pageNumber));
+  }
+
+  const getPage = (sorted, pageNumber) => {
+    setCurrentPage(pageNumber);
+
+    console.log(sorted)
+    console.log(sorted.slice(
+      pageNumber * clipsPerPage,
+      pageNumber * clipsPerPage + clipsPerPage
+    ))
     if (pagination) {
-      sorted = sorted.slice(
-        currentPage * clipsPerPage,
-        currentPage * clipsPerPage + clipsPerPage
+      return sorted.slice(
+        pageNumber * clipsPerPage,
+        pageNumber * clipsPerPage + clipsPerPage
       )
     }
-
-    setClips(sorted);
   }
 
   const { clipsPerPage } = localSettings;
+  if (!clips.length) {
+    sortClips("saved");
+  }
 
   /*
    * Filter clips
@@ -121,7 +140,6 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
 
   const totalClipCount = videos.length;
   const pageCount = Math.ceil(totalClipCount / clipsPerPage);
-
 
 
   // Setting the filter text for every keypress is terrible for performance, so
@@ -176,7 +194,7 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
             totalPages={pageCount}
             totalClips={totalClipCount}
             clipsPerPage={clipsPerPage}
-            onChangePage={(newPageNumber) => setCurrentPage(newPageNumber)}
+            onChangePage={(newPageNumber) => updatePage(newPageNumber, clipList)}
             onChangeClipsPerPage={handleChangeClipsPerPage}
             showLabel
           />
@@ -203,7 +221,7 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
           </thead>
 
           <tbody>
-            {clips.map((clip) => (
+            {clipList.map((clip) => (
               <LinkRow
                 key={clip.name}
                 onClick={() => {
