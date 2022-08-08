@@ -160,7 +160,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL }) => {
     <>
       <Head>
         <meta property="og:type" value="video.other" />
-        <meta property="og:site_name" value={"Clipface - " + currentURL.host} />
+        <meta property="og:site_name" value={publicRuntimeConfig.pageTitle} />
         <meta property="og:url" value={currentURL.toString()} />
         <meta property="og:title" value={clipMeta.title || clipName} />
 
