@@ -1,7 +1,6 @@
 /*
  * Custom app component, used to redirect if authentication is missing
  */
-import React, { useEffect } from 'react';
 import * as cookie from "cookie";
 import { createGlobalStyle } from "styled-components";
 import { setLocalSettings } from "../localSettings";

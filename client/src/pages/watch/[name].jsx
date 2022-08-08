@@ -9,6 +9,7 @@ import styled from "styled-components";
 import TimeAgo from "react-timeago";
 import prettyBytes from "pretty-bytes";
 import ReactMarkdown from "react-markdown";
+import getConfig from "next/config";
 
 import ClipfaceLayout from "../../components/ClipfaceLayout";
 import CopyClipLink from "../../components/CopyClipLink";
@@ -16,6 +17,8 @@ import useLocalSettings from "../../localSettings";
 import requireAuth from "../../backend/requireAuth";
 import { getPublicURL } from "../../util";
 import Container from "../../components/Container";
+
+const { publicRuntimeConfig } = getConfig();
 
 const ButtonRow = styled.div`
   display: flex;
@@ -93,6 +96,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL }) => {
   // we set it immediately after rendering
   useEffect(() => {
     videoRef.current.volume = localSettings.videoVolume;
+    document.title = publicRuntimeConfig.pageTitle + " - " + router.query.name;
   });
 
   // Rehydrate serialized value from getServerSideProps

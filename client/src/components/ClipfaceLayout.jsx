@@ -2,6 +2,7 @@
  * The base layout of the application
  */
 
+import React, { useEffect } from 'react';
 import { useRouter } from "next/router";
 import { Helmet } from "react-helmet";
 import Toggle from "react-toggle";
@@ -106,6 +107,10 @@ export function ClipfaceLayout({
   const contentClassName = pageName ? `page-${pageName}` : "";
   const [localSettings, setLocalSettings] = useLocalSettings();
 
+  useEffect(() => {
+    document.title = publicRuntimeConfig.pageTitle;
+  }, []);
+
   const toggleDarkMode = () => {
     setLocalSettings({
       ...localSettings,
@@ -154,7 +159,6 @@ export function ClipfaceLayout({
               <NavbarMenu>
                 <Toggle
                   icons={false}
-                  defaultChecked={localSettings.isDarkmode}
                   checked={localSettings.isDarkmode}
                   onChange={toggleDarkMode}
                 />

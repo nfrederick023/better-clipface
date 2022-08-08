@@ -17,8 +17,6 @@ import useLocalSettings from "../localSettings";
 import requireAuth from "../backend/requireAuth";
 import Container from "../components/Container";
 
-const { publicRuntimeConfig } = getConfig();
-
 const ClearFilterButton = styled.span`
   cursor: pointer;
   pointer-events: initial !important;
@@ -63,7 +61,6 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
 
   // Focus filter box on load
   useEffect(() => {
-    document.title = publicRuntimeConfig.pageTitle;
     filterBox.current.focus();
   }, []);
 
