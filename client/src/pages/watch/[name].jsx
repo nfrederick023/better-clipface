@@ -163,6 +163,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL }) => {
         <meta property="og:site_name" value={"Clipface - " + currentURL.host} />
         <meta property="og:url" value={currentURL.toString()} />
         <meta property="og:title" value={clipMeta.title || clipName} />
+        <meta property="og:image" content="https://snacks.dev/test.jpg" />
 
         {clipMeta.description && (
           <meta property="og:description" value={clipMeta.description} />
