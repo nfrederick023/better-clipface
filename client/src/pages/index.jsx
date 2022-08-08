@@ -57,12 +57,42 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
   const [filter, setFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [localSettings, setLocalSettings] = useLocalSettings();
+  const [clips, setClips] = useState(videos)
+  const [selectedSort, setSelectedSort] = useState('')
+  const [selectedOrder, setSelectedOrder] = useState(true)
   const filterBox = useRef();
 
   // Focus filter box on load
   useEffect(() => {
     filterBox.current.focus();
+    sortClips("size")
   }, []);
+
+
+  const sortClips = (sortBy) => {
+    let order;
+
+    if (sortBy == selectedSort && selectedOrder == true) {
+      setSelectedOrder(false);
+      order = false;
+    } else {
+      setSelectedOrder(true)
+      order = true;
+    }
+
+    setSelectedSort(sortBy);
+
+    let sorted = Object.values(videos).sort((a, b) => {
+      return b[sortBy] - a[sortBy]
+    })
+
+    if (order == true) {
+      sorted = sorted.reverse();
+    }
+
+    setClips(sorted
+    );
+  }
 
   const { clipsPerPage } = localSettings;
 
@@ -87,6 +117,7 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
       currentPage * clipsPerPage + clipsPerPage
     );
   }
+
 
   // Setting the filter text for every keypress is terrible for performance, so
   // we only do it 50ms after the user stops typing
@@ -152,14 +183,22 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
         >
           <thead>
             <tr>
-              <th width="150px">Saved</th>
-              <th width="100px">Clip size</th>
-              <th>Clip name</th>
+              <th onClick={() => {
+                sortClips("date");
+              }} width="150px">Saved</th>
+              <th onClick={() => {
+                sortClips("size");
+              }}
+                width="100px">Clip size</th>
+              <th onClick={() => {
+                sortClips("name");
+              }}
+              >Clip name</th>
             </tr>
           </thead>
 
           <tbody>
-            {videos.map((clip) => (
+            {clips.map((clip) => (
               <LinkRow
                 key={clip.name}
                 onClick={() => {

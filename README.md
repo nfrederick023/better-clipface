@@ -1,6 +1,12 @@
-# Clippy Mc. Clipface
+![Watch page](logo_full.png)
 
-Super simple, self hosted clip sharing application.
+**Better Clipface** is a fork of Clipface with an improved UI/UX and greater functionality. Feel free to use this fork, but **do not expect any support.**
+
+## Why "Better" Clipface?
+
+- Cleaned up UI/UX
+- Added dark mode (with toggle)
+- Fixed Discord not embedding files over 100MB in size (soon™)
 
 ## Features
 
@@ -14,6 +20,8 @@ Super simple, self hosted clip sharing application.
 - Uses OpenGraph metadata so videos are automatically embedded in Facebook
   posts, Discord messages etc.
 
+## Preview
+
 ![Watch page](screenshots/watch-page.png)
 
 ![Clip list](screenshots/clip-list.png)
@@ -23,7 +31,7 @@ Super simple, self hosted clip sharing application.
 First of all pull the Docker image:
 
 ```
-$ docker pull tomsan/clipface
+$ docker pull snnacks/better-clipface
 ```
 
 Very simple usage, no authentication, port 80:
@@ -33,7 +41,7 @@ docker run -d \
   --name clipface \
   -v /host/path/to/clips:/clips \
   -p 80:80 \
-  tomsan/clipface:latest
+  snnacks/better-clipface:latest
 ```
 
 For more advanced usage, you need to provide Clipface with some
@@ -48,7 +56,7 @@ docker run -d \
   -p 80:80 \
   -e CLIPFACE_USER_PASSWORD="password123" \
   -e CLIPFACE_CLIPS_PAGE_TITLE="Bob's clips" \
-  tomsan/clipface:latest
+  snnacks/better-clipface:latest
 ```
 
 ## Configuration

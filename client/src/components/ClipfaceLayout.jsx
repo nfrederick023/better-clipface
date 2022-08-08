@@ -152,7 +152,7 @@ export function ClipfaceLayout({
           <nav>
             <NavbarContainer>
               <a href="/">
-                <HeaderTitle class="title is-4">
+                <HeaderTitle className="title is-4">
                   {publicRuntimeConfig.headerTitle}
                 </HeaderTitle>
               </a>
@@ -190,7 +190,7 @@ export function ClipfaceLayout({
       <Footer>
         <div className="container">
           {/* <a href="https://github.com/Hubro/clipface" target="_blank">
-            <i class="fab fa-github"></i> Clipface
+            <i className="fab fa-github"></i> Clipface
           </a> */}
         </div>
       </Footer>
