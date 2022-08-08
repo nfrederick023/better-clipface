@@ -53,6 +53,10 @@ const NoVideosPlaceholder = styled.div`
   padding: 50px;
 `;
 
+const LinkHeader = styled.th`
+  cursor: pointer;
+`;
+
 const IndexPage = ({ videos, title, pagination, authInfo }) => {
   const [filter, setFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
@@ -61,6 +65,7 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
   const [selectedSort, setSelectedSort] = useState('')
   const [selectedOrder, setSelectedOrder] = useState(true)
   const filterBox = useRef();
+  console.log(currentPage);
 
   // Focus filter box on load
   useEffect(() => {
@@ -90,8 +95,14 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
       sorted = sorted.reverse();
     }
 
-    setClips(sorted
-    );
+    if (pagination) {
+      sorted = sorted.slice(
+        currentPage * clipsPerPage,
+        currentPage * clipsPerPage + clipsPerPage
+      )
+    }
+
+    setClips(sorted);
   }
 
   const { clipsPerPage } = localSettings;
@@ -111,12 +122,6 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
   const totalClipCount = videos.length;
   const pageCount = Math.ceil(totalClipCount / clipsPerPage);
 
-  if (pagination) {
-    videos = videos.slice(
-      currentPage * clipsPerPage,
-      currentPage * clipsPerPage + clipsPerPage
-    );
-  }
 
 
   // Setting the filter text for every keypress is terrible for performance, so
@@ -183,17 +188,17 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
         >
           <thead>
             <tr>
-              <th onClick={() => {
-                sortClips("date");
-              }} width="150px">Saved</th>
-              <th onClick={() => {
+              <LinkHeader onClick={() => {
+                sortClips("saved");
+              }} width="150px">Saved</LinkHeader>
+              <LinkHeader onClick={() => {
                 sortClips("size");
               }}
-                width="100px">Clip size</th>
-              <th onClick={() => {
+                width="100px">Clip size</LinkHeader>
+              <LinkHeader onClick={() => {
                 sortClips("name");
               }}
-              >Clip name</th>
+              >Clip name</LinkHeader>
             </tr>
           </thead>
 
@@ -227,7 +232,7 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
           </tbody>
         </table>
 
-        {videos.length == 0 && (
+        {clips.length == 0 && (
           <NoVideosPlaceholder>No clips here yet</NoVideosPlaceholder>
         )}
 
