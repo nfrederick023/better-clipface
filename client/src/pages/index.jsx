@@ -49,7 +49,8 @@ const RowButtons = styled.div`
 `;
 
 const NoVideosPlaceholder = styled.div`
-  background-color: #eee;
+  min-width: 100%;
+  border: 1px solid #363636;
   text-align: center;
   padding: 50px;
 `;
