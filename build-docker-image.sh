@@ -9,5 +9,5 @@ yarn build
 cd ..
 
 bash ./bundle-client.sh
-docker build --network=host -t clipface:latest .
+docker build --network=host -t snnacks/better-clipface:latest .
 rm client/docker-bundle.tgz
