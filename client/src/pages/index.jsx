@@ -70,7 +70,6 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
   // Focus filter box on load
   useEffect(() => {
     filterBox.current.focus();
-
   }, []);
 
 
@@ -88,7 +87,7 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
     setSelectedSort(sortBy);
 
     let sorted = Object.values(videos).sort((a, b) => {
-      return b[sortBy] - a[sortBy]
+      return a[sortBy] - b[sortBy]
     })
 
     if (order) {
