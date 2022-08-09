@@ -42,7 +42,10 @@ export default function Pagination(props) {
   const onLastPage = currentPage == totalPages - 1;
 
   const changeClipsPerPage = (newNumber) => {
-    onChangeClipsPerPage && onChangeClipsPerPage(newNumber);
+    console.log('number: ' + newNumber);
+    if (!isNaN(newNumber) && newNumber !== 0) {
+      onChangeClipsPerPage && onChangeClipsPerPage(newNumber);
+    }
   };
 
   return (
