@@ -103,6 +103,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL }) => {
   currentURL = new URL(currentURL);
 
   const clipName = router.query.name;
+  const clipTitle = clipName.split('.').slice(0, -1).join('.');
   const theaterMode = localSettings.theaterMode;
 
   if (!clipName) {
@@ -162,7 +163,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL }) => {
         <meta property="og:type" value="video.other" />
         <meta property="og:site_name" value={publicRuntimeConfig.pageTitle} />
         <meta property="og:url" value={currentURL.toString()} />
-        <meta property="og:title" value={clipMeta.title || clipName} />
+        <meta property="og:title" value={clipTitle} />
 
         {clipMeta.description && (
           <meta property="og:description" value={clipMeta.description} />
@@ -224,7 +225,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL }) => {
 
         <Container>
           <VideoInfo>
-            <h1 className="title is-4">{clipMeta.title || clipMeta.name}</h1>
+            <h1 className="title is-4">{clipTitle}</h1>
             <h2 className="subtitle is-6">
               Saved <TimeAgo date={clipMeta.saved} />
               <span style={{ margin: "0px 10px" }}>•</span>
