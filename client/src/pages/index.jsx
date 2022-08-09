@@ -66,14 +66,14 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
   const [isAscending, setIsAscending] = useState(true)
   const [totalClipCount, setTotalClipCount] = useState(0)
   const [pageCount, setPageCount] = useState(0)
+  const [clipsPerPage, setClipsPerPage] = useState(localSettings.clipsPerPage)
   const filterBox = useRef();
-  const { clipsPerPage } = localSettings;
 
   // Focus filter box on load
   useEffect(() => {
     filterBox.current.focus();
     updatePage();
-  }, [sort, currentPage, filter, isAscending]);
+  }, [sort, currentPage, filter, isAscending, clipsPerPage]);
 
   const updatePage = () => {
     let clipsList;
@@ -148,6 +148,7 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
 
   const handleChangeClipsPerPage = (newClipsPerPage) => {
     setLocalSettings({ ...localSettings, clipsPerPage: newClipsPerPage });
+    setClipsPerPage(newClipsPerPage);
   };
 
   return (
