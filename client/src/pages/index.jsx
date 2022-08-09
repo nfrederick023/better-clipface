@@ -62,89 +62,67 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [localSettings, setLocalSettings] = useLocalSettings();
   const [clips, setClips] = useState([])
-  const [clipList, setclipList] = useState([])
-  const [selectedSort, setSelectedSort] = useState('')
-  const [selectedOrder, setSelectedOrder] = useState(true)
+  const [sort, setSort] = useState('saved')
+  const [isAscending, setIsAscending] = useState(true)
+  const [totalClipCount, setTotalClipCount] = useState(0)
+  const [pageCount, setPageCount] = useState(0)
   const filterBox = useRef();
+  const { clipsPerPage } = localSettings;
 
   // Focus filter box on load
   useEffect(() => {
     filterBox.current.focus();
-  }, []);
+    updatePage();
+  }, [sort, currentPage, filter, isAscending]);
 
+  const updatePage = () => {
+    let clipsList;
 
-  const sortClips = (sortBy) => {
-    let order;
-
-    if (sortBy == selectedSort && selectedOrder) {
-      setSelectedOrder(false);
-      order = false;
-    } else {
-      setSelectedOrder(true)
-      order = true;
-    }
-
-    setSelectedSort(sortBy);
-
-    let sorted = Object.values(videos).sort((a, b) => {
-      return a[sortBy] - b[sortBy]
+    // get sorted clips list
+    clipsList = Object.values(videos).sort((a, b) => {
+      return a[sort] - b[sort]
     })
 
-    if (order) {
-      sorted = sorted.reverse();
+    if (isAscending) {
+      clipsList = clipsList.reverse();
     }
 
-    setClips(sorted);
-    sorted = getPage(sorted, currentPage);
-    setclipList(sorted);
-  }
+    //apply any filters
+    if (filter) {
+      clipsList = clipsList.filter((clip) => clip.name.toLowerCase().includes(filter));
+    }
 
+    setTotalClipCount(clipsList.length);
+    setPageCount(Math.ceil(clipsList.length / clipsPerPage));
 
-  const updatePage = (pageNumber) => {
-    setclipList(getPage(clips, pageNumber));
-  }
-
-  const getPage = (sorted, pageNumber) => {
-    setCurrentPage(pageNumber);
-
-    console.log(sorted)
-    console.log(sorted.slice(
-      pageNumber * clipsPerPage,
-      pageNumber * clipsPerPage + clipsPerPage
-    ))
+    //apply any pagination
     if (pagination) {
-      return sorted.slice(
-        pageNumber * clipsPerPage,
-        pageNumber * clipsPerPage + clipsPerPage
+      clipsList = clipsList.slice(
+        currentPage * clipsPerPage,
+        currentPage * clipsPerPage + clipsPerPage
       )
     }
+
+    //set pages clips
+    setClips(clipsList);
   }
 
-  const { clipsPerPage } = localSettings;
-  if (!clips.length) {
-    sortClips("saved");
+  const changeSort = (newSort) => {
+    if (newSort == sort && isAscending) {
+      setIsAscending(false);
+    } else {
+      setIsAscending(true)
+    }
+
+    setSort(newSort);
   }
 
-  /*
-   * Filter clips
-   */
-
-  if (filter) {
-    videos = videos.filter((clip) => clip.name.toLowerCase().includes(filter));
+  const changePage = (pageNumber) => {
+    setCurrentPage(pageNumber);
   }
 
-  /*
-   * Paginate clips
-   */
-
-  const totalClipCount = videos.length;
-  const pageCount = Math.ceil(totalClipCount / clipsPerPage);
-
-
-  // Setting the filter text for every keypress is terrible for performance, so
-  // we only do it 50ms after the user stops typing
   const debouncedSetFilter = debounce((text) => {
-    setFilter(text);
+    setFilter(text)
   }, 50);
 
   const onFilterChange = (e) => {
@@ -193,7 +171,7 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
             totalPages={pageCount}
             totalClips={totalClipCount}
             clipsPerPage={clipsPerPage}
-            onChangePage={(newPageNumber) => updatePage(newPageNumber, clipList)}
+            onChangePage={(pageNumber) => changePage(pageNumber)}
             onChangeClipsPerPage={handleChangeClipsPerPage}
             showLabel
           />
@@ -206,21 +184,21 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
           <thead>
             <tr>
               <LinkHeader onClick={() => {
-                sortClips("saved");
+                changeSort("saved");
               }} width="150px">Saved</LinkHeader>
               <LinkHeader onClick={() => {
-                sortClips("size");
+                changeSort("size");
               }}
                 width="100px">Clip size</LinkHeader>
               <LinkHeader onClick={() => {
-                sortClips("name");
+                changeSort("name");
               }}
               >Clip name</LinkHeader>
             </tr>
           </thead>
 
           <tbody>
-            {clipList.map((clip) => (
+            {clips.map((clip) => (
               <LinkRow
                 key={clip.name}
                 onClick={() => {
@@ -250,7 +228,7 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
         </table>
 
         {clips.length == 0 && (
-          <NoVideosPlaceholder>No clips here yet</NoVideosPlaceholder>
+          <NoVideosPlaceholder>No clips Found</NoVideosPlaceholder>
         )}
 
         {pagination && (
