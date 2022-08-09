@@ -92,11 +92,13 @@ const WatchPage = ({ clipMeta, authInfo, currentURL }) => {
   const videoRef = useRef();
   const [localSettings, setLocalSettings] = useLocalSettings();
 
+
+  
   // The video volume can't be set directly on the element for some reason, so
   // we set it immediately after rendering
   useEffect(() => {
     videoRef.current.volume = localSettings.videoVolume;
-    document.title = publicRuntimeConfig.pageTitle + " - " + router.query.name;
+    document.title = router.query.name.split('.').slice(0, -1).join('.') + " - " + publicRuntimeConfig.pageTitle;
   });
 
   // Rehydrate serialized value from getServerSideProps
