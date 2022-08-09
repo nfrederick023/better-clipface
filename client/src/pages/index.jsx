@@ -93,7 +93,12 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
     }
 
     setTotalClipCount(clipsList.length);
-    setPageCount(Math.ceil(clipsList.length / clipsPerPage));
+    const pageCount = Math.ceil(clipsList.length / clipsPerPage)
+    setPageCount(pageCount);
+
+    if (currentPage > pageCount - 1) {
+      setCurrentPage(pageCount - 1);
+    }
 
     //apply any pagination
     if (pagination) {
