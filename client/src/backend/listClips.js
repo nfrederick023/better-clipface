@@ -37,6 +37,7 @@ export default function listClips() {
       name: path.basename(filePath),
       size: stats.size,
       saved: stats.mtimeMs,
+      created: stats.birthtimeMs,
       title: meta.title || null,
       description: meta.description || null,
     };

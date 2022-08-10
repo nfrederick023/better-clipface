@@ -193,16 +193,19 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
           <thead>
             <tr>
               <LinkHeader onClick={() => {
+                changeSort("created");
+              }} width="150px">Created</LinkHeader>
+                            <LinkHeader onClick={() => {
                 changeSort("saved");
-              }} width="150px">Saved</LinkHeader>
+              }} width="150px">Uploaded</LinkHeader>
               <LinkHeader onClick={() => {
                 changeSort("size");
               }}
-                width="100px">Clip size</LinkHeader>
+                width="100px">Size</LinkHeader>
               <LinkHeader onClick={() => {
                 changeSort("name");
               }}
-              >Clip name</LinkHeader>
+              >Name</LinkHeader>
             </tr>
           </thead>
 
@@ -214,6 +217,9 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
                   handleLinkClick(clip.name);
                 }}
               >
+                <td>
+                  <TimeAgo date={clip.created} />
+                </td>
                 <td>
                   <TimeAgo date={clip.saved} />
                 </td>

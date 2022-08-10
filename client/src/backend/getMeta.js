@@ -34,6 +34,7 @@ export default function getMeta(clipFileName) {
     mime: mime.lookup(clipFileName),
     size: stats.size,
     saved: stats.mtimeMs,
+    created: stats.birthtimeMs,
     title: meta.title || null,
     description: meta.description || null,
   };
