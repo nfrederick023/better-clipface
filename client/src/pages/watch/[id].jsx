@@ -98,7 +98,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
   useEffect(() => {
     if (clip && clipMeta) {
       videoRef.current.volume = localSettings.videoVolume;
-      document.title = publicRuntimeConfig.pageTitle + " - " + clip.name;
+      document.title = clip.name + " - " + publicRuntimeConfig.pageTitle;
     }
   }, [clip]);
 
@@ -116,7 +116,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
   }
 
   const clipTitle = clip.name.split('.').slice(0, -1).join('.');
-  const documentTitle = publicRuntimeConfig.pageTitle + " - " + clip.name;
+  const documentTitle = clip.name + " - " + publicRuntimeConfig.pageTitle;
 
   const handleBackClick = () => {
     videoRef.current.pause();
