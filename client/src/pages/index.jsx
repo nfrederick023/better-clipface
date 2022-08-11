@@ -230,7 +230,7 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
                 </td>
                 <td>{prettyBytes(clip.size)}</td>
                 <td>
-                  {clip.title || clip.name}
+                  {clip.title || clip.name.split('.').slice(0, -1).join('.')}
 
                   <RowButtons>
                     <CopyClipLink clip={clip} noText copyLink />
