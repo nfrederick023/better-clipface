@@ -44,6 +44,12 @@ export async function getClipState(filePath, clipsMeta) {
   const meta = clipsMeta[fileName] || {};
   let state;
 
+  try {
+    state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
+  } catch (e) {
+    state = [];
+  };
+
   if (state.length) {
     const clipState = state.find((clip) => { return clip.clipName == fileName });
     if (clipState) {
