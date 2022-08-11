@@ -11,12 +11,12 @@ import updateClip from "../videoAPI";
 import styled from "styled-components";
 
 
-const CopyTextContainer = styled.div`
- .has-width {
-    min-width: 50px
+const CopyTextContainer = styled.span`
+ .favorite {
+    width: 100px
  }
- .no-width {
-    min-width: 0px;
+ .private {
+   width: 80px;
  }
 `;
 
@@ -25,6 +25,7 @@ export default function CopyClipLink(props) {
   let popupContent = "";
   let hoverContent = "";
   let htmlContent = "";
+  let css = "";
 
   // Hide confirmation message after 1 second
   useEffect(() => {
@@ -47,12 +48,14 @@ export default function CopyClipLink(props) {
   }
 
   if (publicLink) {
+    css = "private";
     popupContent = "Set to Public";
     hoverContent = "Public";
     htmlContent = "Public";
   }
 
   if (privateLink) {
+    css = "private";
     popupContent = "Set to Private";
     hoverContent = "Private";
     htmlContent = "Private";
@@ -64,16 +67,18 @@ export default function CopyClipLink(props) {
     htmlContent = "Copy Link";
   }
 
-  if (favoriteLink) {
-    popupContent = "Added to Favorites";
-    hoverContent = "Favorite Clip";
-    htmlContent = "Favorite Clip";
+  if (unfavoriteLink) {
+    css = "favorite";
+    popupContent = "Removed from Favorites";
+    hoverContent = "Favorite";
+    htmlContent = "Favorite";
   }
 
-  if (unfavoriteLink) {
-    popupContent = "Removed from Favorites";
-    hoverContent = "Unfavorite Clip";
-    htmlContent = "Unfavorite Clip";
+  if (favoriteLink) {
+    css = "favorite";
+    popupContent = "Added to Favorites";
+    hoverContent = "Unfavorite";
+    htmlContent = "Unfavorite";
   }
 
   const updateNewClip = async (newClip) => {
@@ -122,28 +127,26 @@ export default function CopyClipLink(props) {
       <Tippy
         content={hoverContent}
       >
-        <button
-          className={classNames.join(" ")}
-          onClick={(e) => {
-            onClick();
-            e.stopPropagation();
-          }}
-        >
+        <CopyTextContainer >
 
-          <CopyTextContainer >
-            <div className={noText ? 'no-width' : 'has-width'}>
-              <span className="icon is-small">
-                {copyLink && <i className="fas fa-link"></i>}
-                {privateLink && <i className="fas fa-lock"></i>}
-                {publicLink && <i className="fas fa-globe"></i>}
-                {favoriteLink && <i className="fas fa-star"></i>}
-                {unfavoriteLink && <i className="far fa-star" ></i>}
-              </span>
-              {!noText && <span>{htmlContent}</span>}
-            </div>
-          </CopyTextContainer>
+          <button
+            className={(!noText ? css : '') + ' ' + classNames.join(" ")}
+            onClick={(e) => {
+              onClick();
+              e.stopPropagation();
+            }}
+          >
 
-        </button>
+            <span className="icon is-small">
+              {copyLink && <i className="fas fa-link"></i>}
+              {privateLink && <i className="fas fa-lock"></i>}
+              {publicLink && <i className="fas fa-globe"></i>}
+              {favoriteLink && <i className="fas fa-star"></i>}
+              {unfavoriteLink && <i className="far fa-star" ></i>}
+            </span>
+            {!noText && <span >{htmlContent}</span>}
+          </button>
+        </CopyTextContainer>
       </Tippy>
     </Tippy>
   );
