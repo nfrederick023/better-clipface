@@ -93,12 +93,14 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
   const [localSettings, setLocalSettings] = useLocalSettings();
   const [clip, setClip] = useState(video);
 
+  const clipTitle = clip.name.split('.').slice(0, -1).join('.');
+
   // The video volume can't be set directly on the element for some reason, so
   // we set it immediately after rendering
   useEffect(() => {
     if (clip && clipMeta) {
       videoRef.current.volume = localSettings.videoVolume;
-      document.title = clip.name + " - " + publicRuntimeConfig.pageTitle;
+      document.title = clipTitle + " - " + publicRuntimeConfig.pageTitle;
     }
   }, [clip]);
 
@@ -115,8 +117,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
     return <div>404 Clip Not Found</div>;
   }
 
-  const clipTitle = clip.name.split('.').slice(0, -1).join('.');
-  const documentTitle = clip.name + " - " + publicRuntimeConfig.pageTitle;
+  const documentTitle = clipTitle + " - " + publicRuntimeConfig.pageTitle;
 
   const handleBackClick = () => {
     videoRef.current.pause();
