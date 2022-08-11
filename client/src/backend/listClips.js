@@ -56,6 +56,7 @@ export async function getClipState(filePath, clipsMeta) {
     name: fileName,
     size: stats.size,
     saved: stats.mtimeMs,
+    created: stats.birthtimeMs,
     title: meta.title || null,
     description: meta.description || null,
     clipName: fileName,
