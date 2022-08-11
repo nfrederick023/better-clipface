@@ -98,6 +98,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
   useEffect(() => {
     if (clip && clipMeta) {
       videoRef.current.volume = localSettings.videoVolume;
+      document.title = publicRuntimeConfig.pageTitle + " - " + clip.name;
     }
   }, [clip]);
 
