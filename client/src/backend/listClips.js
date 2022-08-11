@@ -40,12 +40,13 @@ export default async function listClips() {
 
 export async function getClipState(filePath, clipsMeta) {
   const fileName = path.basename(filePath);
+  const assetsFilePath = path.join(CLIPS_PATH, "/assets/state.json");
   const stats = fs.statSync(filePath);
   const meta = clipsMeta[fileName] || {};
   let state;
 
   try {
-    state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
+    state = await fse.readJSON(assetsFilePath);
   } catch (e) {
     state = [];
   };
@@ -72,6 +73,13 @@ export async function getClipState(filePath, clipsMeta) {
   }
 
   state.push(newClipState);
-  await fse.writeJSON(path.join(CLIPS_PATH, "/assets/state.json"), state);
+  if (!await fse.pathExists(path.join(CLIPS_PATH, "/assets"))) {
+    await fse.mkdir(path.join(CLIPS_PATH, "/assets"));
+  }
+  try {
+    await fse.writeJSON(assetsFilePath, state);
+  } catch (e) {
+    console.log(e);
+  }
   return newClipState;
 }

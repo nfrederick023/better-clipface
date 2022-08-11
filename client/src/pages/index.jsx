@@ -200,7 +200,7 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
               <LinkHeader onClick={() => {
                 changeSort("created");
               }} width="150px">Created</LinkHeader>
-                            <LinkHeader onClick={() => {
+              <LinkHeader onClick={() => {
                 changeSort("saved");
               }} width="150px">Uploaded</LinkHeader>
               <LinkHeader onClick={() => {
