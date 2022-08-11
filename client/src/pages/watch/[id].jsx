@@ -105,7 +105,6 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
   // Rehydrate serialized value from getServerSideProps
   currentURL = new URL(currentURL);
 
-  const clipTitle = clipName.split('.').slice(0, -1).join('.');
   const theaterMode = localSettings.theaterMode;
 
   if (!clip) {
@@ -115,6 +114,8 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
   if (!clipMeta) {
     return <div>404 Clip Not Found</div>;
   }
+
+  const clipTitle = clip.name.split('.').slice(0, -1).join('.');
 
   const handleBackClick = () => {
     videoRef.current.pause();

@@ -20,14 +20,18 @@ const CLIPS_PATH = config.get("clips_path");
  */
 export function useAuth(handler) {
   const wrapper = async (req, res) => {
-    if (await checkAuth(req)) {
-      return handler(req, res);
-    } else if (await checkSingleClipAuth(req)) {
-      return handler(req, res);
-    } else {
-      res.statusCode = 401;
-      res.end();
-      return;
+    try {
+      if (await checkAuth(req)) {
+        return handler(req, res);
+      } else if (await checkSingleClipAuth(req)) {
+        return handler(req, res);
+      } else {
+        res.statusCode = 401;
+        res.end();
+        return;
+      }
+    } catch (e) {
+      console.log(e);
     }
   };
 
@@ -98,7 +102,7 @@ export async function checkSingleClipAuth(req) {
  */
 export async function checkHashedPassword(user, hashedPassword) {
   if (user != "default") {
-    //throw "Logging in as non-default user is not yet supported";
+    throw "Logging in as non-default user is not yet supported";
   }
 
   const userPassword = config.get("user_password");
@@ -135,7 +139,7 @@ export async function makeSingleClipToken(clipName) {
   //console.debug("Generating single clip token for clip:", clipName);
 
   if (!config.has("user_password")) {
-    //throw "Can't generate single clip tokens with no configured user password";
+    throw "Can't generate single clip tokens with no configured user password";
   }
 
   const userPassword = config.get("user_password");
