@@ -73,10 +73,10 @@ export async function getClipState(filePath, clipsMeta) {
   }
 
   state.push(newClipState);
-  if (!await fse.pathExists(path.join(CLIPS_PATH, "/assets"))) {
-    await fse.mkdir(path.join(CLIPS_PATH, "/assets"));
-  }
   try {
+    if (!await fse.pathExists(path.join(CLIPS_PATH, "/assets"))) {
+      await fse.mkdir(path.join(CLIPS_PATH, "/assets"));
+    }
     await fse.writeJSON(assetsFilePath, state);
   } catch (e) {
     console.log(e);
