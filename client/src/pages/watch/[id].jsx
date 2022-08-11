@@ -98,7 +98,6 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
   useEffect(() => {
     if (clip && clipMeta) {
       videoRef.current.volume = localSettings.videoVolume;
-      document.title = publicRuntimeConfig.pageTitle + " - " + clip.name;
     }
   }, [clip]);
 
@@ -116,6 +115,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
   }
 
   const clipTitle = clip.name.split('.').slice(0, -1).join('.');
+  const documentTitle = publicRuntimeConfig.pageTitle + " - " + clip.name;
 
   const handleBackClick = () => {
     videoRef.current.pause();
@@ -158,6 +158,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
   return (
     <>
       <Head>
+        <title>{documentTitle}</title>
         <meta property="og:type" value="video.other" />
         <meta property="og:site_name" value={publicRuntimeConfig.pageTitle} />
         <meta property="og:url" value={currentURL.toString()} />
