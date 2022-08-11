@@ -160,7 +160,7 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
     <ClipfaceLayout authInfo={authInfo} pageName="index" pageTitle={title}>
       <Container>
         <div className="field">
-          <label className="label">Filter</label>
+          <label className="label">Search</label>
 
           <div className="control has-icons-right">
             <input
