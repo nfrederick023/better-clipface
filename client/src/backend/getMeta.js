@@ -5,9 +5,9 @@
 import fs from "fs";
 import path from "path";
 import config from "config";
-
 import * as mime from "mime-types";
 
+const fse = require('fs-extra');
 const CLIPS_PATH = config.get("clips_path");
 
 /**
@@ -16,9 +16,15 @@ const CLIPS_PATH = config.get("clips_path");
  * @param {string} clipFileName The name of the clip including the file extension
  * @returns {object}
  */
-export default function getMeta(clipFileName) {
-  const stats = fs.statSync(path.join(CLIPS_PATH, clipFileName));
-  const clipBaseName = path.basename(clipFileName, path.extname(clipFileName));
+export default async function getMeta(clipId) {
+  const state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
+  let clip = state.find((clip) => { return clip.id == clipId });
+  if (!clip || !clip.name) {
+    return;
+  }
+  const clipFullPath = path.join(CLIPS_PATH, clip.name);
+  const stats = fs.statSync(clipFullPath);
+  const clipBaseName = path.basename(clip.name, path.extname(clip.name));
 
   let meta = null;
   const metadataPath = path.join(CLIPS_PATH, clipBaseName + ".json");
@@ -30,11 +36,12 @@ export default function getMeta(clipFileName) {
   }
 
   return {
-    name: clipFileName,
-    mime: mime.lookup(clipFileName),
+    name: clip.clipName,
+    mime: mime.lookup(clip.clipName),
     size: stats.size,
     saved: stats.mtimeMs,
     title: meta.title || null,
     description: meta.description || null,
+    createdDate: meta.createdDate || null,
   };
 }

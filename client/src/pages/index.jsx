@@ -8,7 +8,6 @@ import styled from "styled-components";
 import TimeAgo from "react-timeago";
 import prettyBytes from "pretty-bytes";
 import debounce from "lodash/debounce";
-import getConfig from "next/config";
 
 import Pagination from "../components/Pagination";
 import ClipfaceLayout from "../components/ClipfaceLayout";
@@ -57,7 +56,7 @@ const LinkHeader = styled.th`
   cursor: pointer;
 `;
 
-const IndexPage = ({ videos, title, pagination, authInfo }) => {
+const IndexPage = ({ videoList, title, pagination, authInfo }) => {
   const [filter, setFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [localSettings, setLocalSettings] = useLocalSettings();
@@ -67,13 +66,14 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
   const [totalClipCount, setTotalClipCount] = useState(0)
   const [pageCount, setPageCount] = useState(0)
   const [clipsPerPage, setClipsPerPage] = useState(localSettings.clipsPerPage)
+  const [videos, setVideos] = useState(videoList)
   const filterBox = useRef();
 
   // Focus filter box on load
   useEffect(() => {
     filterBox.current.focus();
     updatePage();
-  }, [sort, currentPage, filter, isAscending, clipsPerPage]);
+  }, [sort, currentPage, filter, isAscending, clipsPerPage, videos]);
 
   const updatePage = () => {
     let clipsList;
@@ -110,7 +110,6 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
         currentPage * clipsPerPage + clipsPerPage
       )
     }
-
     //set pages clips
     setClips(clipsList);
   }
@@ -142,14 +141,20 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
     setFilter("");
   };
 
-  const handleLinkClick = (clipName) => {
-    Router.push(`/watch/${clipName}`);
+  const handleLinkClick = (clipId) => {
+    Router.push(`/watch/${clipId}`);
   };
 
   const handleChangeClipsPerPage = (newClipsPerPage) => {
     setLocalSettings({ ...localSettings, clipsPerPage: newClipsPerPage });
     setClipsPerPage(newClipsPerPage);
   };
+
+  const updateVideoList = (clip) => {
+    const newVideoList = videos.filter((video) => { return video.id != clip.id });
+    newVideoList.push(clip);
+    setVideos(newVideoList);
+  }
 
   return (
     <ClipfaceLayout authInfo={authInfo} pageName="index" pageTitle={title}>
@@ -211,7 +216,7 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
               <LinkRow
                 key={clip.name}
                 onClick={() => {
-                  handleLinkClick(clip.name);
+                  handleLinkClick(clip.id);
                 }}
               >
                 <td>
@@ -222,13 +227,25 @@ const IndexPage = ({ videos, title, pagination, authInfo }) => {
                   {clip.title || clip.name}
 
                   <RowButtons>
-                    <CopyClipLink clipName={clip.name} noText />
+                    <CopyClipLink clip={clip} noText copyLink />
 
                     {authInfo.status == "AUTHENTICATED" && (
                       // There's no point in showing the "Copy public link"
                       // button if Clipface is not password protected
-                      <CopyClipLink clipName={clip.name} noText publicLink />
+                      <>
+                        {
+                          clip.requireAuth ?
+                            <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText privateLink /> :
+                            <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText publicLink />
+                        }
+                        {
+                          clip.isFavorite ?
+                            <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText favoriteLink /> :
+                            <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText unfavoriteLink />
+                        }
+                      </>
                     )}
+
                   </RowButtons>
                 </td>
               </LinkRow>
@@ -260,17 +277,17 @@ export const getServerSideProps = requireAuth(async (context) => {
 
   const { checkAuth } = require("../backend/auth");
 
-  let videos = [];
+  let videoList = [];
 
   if (await checkAuth(context.req)) {
     const listClips = require("../backend/listClips").default;
 
-    videos = listClips();
+    videoList = await listClips();
   }
 
   return {
     props: {
-      videos,
+      videoList,
       pagination: config.get("pagination"),
       title: config.has("clips_page_title")
         ? config.get("clips_page_title")

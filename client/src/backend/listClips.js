@@ -3,18 +3,18 @@
  *
  * This module should only be imported from server side code.
  */
-
 import fs from "fs";
 import path from "path";
 import glob from "glob";
 import config from "config";
+import crypto from "crypto";
+const fse = require('fs-extra');
 
 const CLIPS_PATH = config.get("clips_path");
 const CLIPS_GLOB = `${CLIPS_PATH}/*.@(mkv|mp4|webm|mov|mpeg|avi|wmv|json)`;
 
-export default function listClips() {
+export default async function listClips() {
   let clips = glob.sync(CLIPS_GLOB).sort().reverse();
-
   const clipsMeta = {};
 
   clips
@@ -28,17 +28,49 @@ export default function listClips() {
   // Remove the metadata files from the clip list
   clips = clips.filter((clipPath) => !clipPath.endsWith(".json"));
 
-  return clips.map((filePath) => {
-    const stats = fs.statSync(filePath);
-    const fileName = path.basename(filePath, path.extname(filePath));
-    const meta = clipsMeta[fileName] || {};
+  const clipDetails = [];
+  for (const filePath of clips) {
+    clipDetails.push({
+      ...await getClipState(filePath, clipsMeta)
+    })
+  }
+  await fse.writeJSON(path.join(CLIPS_PATH, "/assets/state.json"), clipDetails);
+  return clipDetails;
+}
 
-    return {
-      name: path.basename(filePath),
-      size: stats.size,
-      saved: stats.mtimeMs,
-      title: meta.title || null,
-      description: meta.description || null,
-    };
-  });
+export async function getClipState(filePath, clipsMeta) {
+  const fileName = path.basename(filePath);
+  const stats = fs.statSync(filePath);
+  const meta = clipsMeta[fileName] || {};
+  let state;
+
+  try {
+    state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
+  } catch (e) {
+    state = [];
+  };
+
+  if (state.length) {
+    const clipState = state.find((clip) => { return clip.clipName == fileName });
+    if (clipState) {
+      return clipState;
+    }
+  }
+
+  const id = crypto.randomBytes(4).toString('hex');
+  const newClipState = {
+    name: fileName,
+    size: stats.size,
+    saved: stats.mtimeMs,
+    title: meta.title || null,
+    description: meta.description || null,
+    clipName: fileName,
+    requireAuth: false,
+    isFavorite: false,
+    id
+  }
+
+  state.push(newClipState);
+  await fse.writeJSON(path.join(CLIPS_PATH, "/assets/state.json"), state);
+  return newClipState;
 }

@@ -4,17 +4,19 @@
 
 import fs from "fs";
 import path from "path";
-
 import config from "config";
 import * as mime from "mime-types";
 
 import { useAuth } from "../../../backend/auth";
 
+const fse = require('fs-extra');
 const CLIPS_PATH = config.get("clips_path");
 
-export default useAuth((req, res) => {
-  const name = req.query.name;
-  const clipPath = path.join(CLIPS_PATH, name);
+export default useAuth(async (req, res) => {
+  const clipId = req.query.id;
+  const state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
+  const clip = state.find((clip) => { return clip.id == clipId });
+  const clipPath = path.join(CLIPS_PATH, clip.clipName);
 
   if (!fs.existsSync(clipPath)) {
     res.statusCode = 404;

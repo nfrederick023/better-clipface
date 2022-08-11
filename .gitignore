@@ -2,3 +2,8 @@
 .env
 .envrc
 *.log
+client/package-lock.json
+client/yarn.lock
+client/yarn.lock
+client/config/default.toml
+

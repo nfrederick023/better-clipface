@@ -8,7 +8,8 @@ import bcrypt from "bcrypt";
 import cookie from "cookie";
 import path from "path";
 import config from "config";
-
+const fse = require('fs-extra');
+const CLIPS_PATH = config.get("clips_path");
 /**
  * Middleware for handling authentication
  *
@@ -71,17 +72,16 @@ export async function checkAuth(req) {
  */
 export async function checkSingleClipAuth(req) {
   const url = new URL(req.url, `http://${req.headers.host}`);
-  const token = getToken(req);
+  const clipId = url.pathname.split("/").pop();
 
   // Paths that should be validated by the single clip auth token
   const clipPaths = ["/watch", "/api/video"];
 
   const dirname = path.dirname(url.pathname);
-  const clipname = decodeURIComponent(path.basename(url.pathname));
+  //console.log(clipId);
 
-  if (token && clipPaths.includes(dirname)) {
-    const singlePageAuthenticated = await checkSingleClipToken(token, clipname);
-
+  if (clipId && clipPaths.includes(dirname)) {
+    const singlePageAuthenticated = await checkSingleClipToken(clipId);
     return singlePageAuthenticated;
   }
 
@@ -98,7 +98,7 @@ export async function checkSingleClipAuth(req) {
  */
 export async function checkHashedPassword(user, hashedPassword) {
   if (user != "default") {
-    throw "Logging in as non-default user is not yet supported";
+    //throw "Logging in as non-default user is not yet supported";
   }
 
   const userPassword = config.get("user_password");
@@ -132,18 +132,19 @@ export async function hashPassword(password) {
  * @returns {string} The token
  */
 export async function makeSingleClipToken(clipName) {
-  console.debug("Generating single clip token for clip:", clipName);
+  //console.debug("Generating single clip token for clip:", clipName);
 
   if (!config.has("user_password")) {
-    throw "Can't generate single clip tokens with no configured user password";
+    //throw "Can't generate single clip tokens with no configured user password";
   }
 
   const userPassword = config.get("user_password");
 
   const salt = await bcrypt.genSalt();
   const token = await bcrypt.hash(userPassword + clipName, salt);
+  //console.log(token);
 
-  console.debug("Generated single clip token:", token);
+  //console.debug("Generated single clip token:", token);
 
   return token;
 }
@@ -156,17 +157,18 @@ export async function makeSingleClipToken(clipName) {
  * @param {string} clipName
  * @returns {Promise<boolean>}
  */
-export async function checkSingleClipToken(token, clipName) {
-  console.debug("Validating token", token, "for clip name", clipName);
+export async function checkSingleClipToken(clipId) {
+  //console.debug("Validating access to ", clipId);
+
+  const state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
 
   if (!config.has("user_password")) {
     throw "Can't validate single clip tokens with no configured user password";
   }
 
-  const userPassword = config.get("user_password");
-  const result = await bcrypt.compare(userPassword + clipName, token);
+  const result = state.some(clip => clip.id == clipId && !clip.requireAuth);
 
-  console.debug("Result", result);
+  //console.debug("Result", result);
 
   return result;
 }
@@ -185,7 +187,7 @@ export function getToken(req) {
     try {
       return Buffer.from(url.searchParams.get("token"), "base64").toString();
     } catch (e) {
-      console.error("Failed to get token from query params:", e);
+      //console.error("Failed to get token from query params:", e);
       return null;
     }
   }

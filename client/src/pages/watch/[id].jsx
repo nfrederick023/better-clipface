@@ -4,20 +4,20 @@
 
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import TimeAgo from "react-timeago";
 import prettyBytes from "pretty-bytes";
 import ReactMarkdown from "react-markdown";
 import getConfig from "next/config";
-
 import ClipfaceLayout from "../../components/ClipfaceLayout";
 import CopyClipLink from "../../components/CopyClipLink";
 import useLocalSettings from "../../localSettings";
 import requireAuth from "../../backend/requireAuth";
 import { getPublicURL } from "../../util";
 import Container from "../../components/Container";
-
+import path from "path";
+import config from "config";
 const { publicRuntimeConfig } = getConfig();
 
 const ButtonRow = styled.div`
@@ -87,30 +87,32 @@ const VideoDescription = styled.div`
   margin-top: 25px;
 `;
 
-const WatchPage = ({ clipMeta, authInfo, currentURL }) => {
+const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
   const router = useRouter();
   const videoRef = useRef();
   const [localSettings, setLocalSettings] = useLocalSettings();
+  const [clip, setClip] = useState(video);
 
   // The video volume can't be set directly on the element for some reason, so
   // we set it immediately after rendering
   useEffect(() => {
-    videoRef.current.volume = localSettings.videoVolume;
-    document.title = publicRuntimeConfig.pageTitle + " - " + router.query.name;
-  });
+    if (clip && clipMeta) {
+      videoRef.current.volume = localSettings.videoVolume;
+      document.title = publicRuntimeConfig.pageTitle + " - " + clip.name;
+    }
+  }, [clip]);
 
   // Rehydrate serialized value from getServerSideProps
   currentURL = new URL(currentURL);
 
-  const clipName = router.query.name;
   const theaterMode = localSettings.theaterMode;
 
-  if (!clipName) {
+  if (!clip) {
     return <div>No clip specified</div>;
   }
 
   if (!clipMeta) {
-    return <div>Clip doesn't exist</div>;
+    return <div>404 Clip Not Found</div>;
   }
 
   const handleBackClick = () => {
@@ -137,12 +139,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL }) => {
     });
   };
 
-  var videoSrc = "/api/video/" + encodeURIComponent(clipName);
-
-  // Forward the single clip auth token to the clip URL
-  if (authInfo.status == "SINGLE_PAGE_AUTHENTICATED") {
-    videoSrc += "?token=" + Buffer.from(authInfo.token).toString("base64");
-  }
+  var videoSrc = "/api/video/" + encodeURIComponent(clip.id);
 
   const fullVideoURL = `${currentURL.protocol}//${currentURL.host}${videoSrc}`;
 
@@ -162,7 +159,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL }) => {
         <meta property="og:type" value="video.other" />
         <meta property="og:site_name" value={publicRuntimeConfig.pageTitle} />
         <meta property="og:url" value={currentURL.toString()} />
-        <meta property="og:title" value={clipMeta.title || clipName} />
+        <meta property="og:title" value={clipMeta.title || clip.name} />
 
         {clipMeta.description && (
           <meta property="og:description" value={clipMeta.description} />
@@ -209,8 +206,14 @@ const WatchPage = ({ clipMeta, authInfo, currentURL }) => {
             {/* Only show link copying buttons to authenticated users */}
             {authInfo.status == "AUTHENTICATED" && (
               <>
-                <CopyClipLink clipName={clipName} />
-                <CopyClipLink clipName={clipName} publicLink />
+                <CopyClipLink clip={clip} copyLink />
+                {clip.requireAuth ? <CopyClipLink clip={clip} updateVideoList={setClip} privateLink /> :
+                  <CopyClipLink clip={clip} updateVideoList={setClip} publicLink />
+                }
+                {clip.isFavorite ? <CopyClipLink clip={clip} updateVideoList={setClip} favoriteLink /> :
+                  <CopyClipLink clip={clip} updateVideoList={setClip} unfavoriteLink />
+                }
+
               </>
             )}
           </ButtonRow>
@@ -249,12 +252,22 @@ const WatchPage = ({ clipMeta, authInfo, currentURL }) => {
 
 export const getServerSideProps = requireAuth(async ({ query, req }) => {
   const getMeta = require("../../backend/getMeta").default;
+  const fse = require('fs-extra');
+  const CLIPS_PATH = config.get("clips_path");
 
-  const clipName = query.name;
-  const clipMeta = getMeta(clipName);
+  const state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
+  let clip = state.find((clip) => { return clip.id == query.id });
+  let clipMeta = await getMeta(query.id);
+
+  if (!clipMeta) {
+    clipMeta = '';
+  }
+  if (!clip) {
+    clip = '';
+  }
 
   return {
-    props: { clipMeta, currentURL: getPublicURL(req).toString() },
+    props: { clipMeta, currentURL: getPublicURL(req).toString(), video: clip },
   };
 });
 
