@@ -105,6 +105,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
   // Rehydrate serialized value from getServerSideProps
   currentURL = new URL(currentURL);
 
+  const clipTitle = clipName.split('.').slice(0, -1).join('.');
   const theaterMode = localSettings.theaterMode;
 
   if (!clip) {
@@ -159,11 +160,13 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
         <meta property="og:type" value="video.other" />
         <meta property="og:site_name" value={publicRuntimeConfig.pageTitle} />
         <meta property="og:url" value={currentURL.toString()} />
-        <meta property="og:title" value={clipMeta.title || clip.name} />
+        <meta property="og:title" value={clipTitle} />
 
-        {clipMeta.description && (
-          <meta property="og:description" value={clipMeta.description} />
-        )}
+        {
+          clipMeta.description && (
+            <meta property="og:description" value={clipMeta.description} />
+          )
+        }
 
         <meta property="og:video" value={fullVideoURL} />
         <meta property="og:video:url" value={fullVideoURL} />
@@ -171,7 +174,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
         <meta property="og:video:type" content={clipMeta.mime} />
         <meta property="og:video:width" content="1280" />
         <meta property="og:video:height" content="720" />
-      </Head>
+      </Head >
 
       <ClipfaceLayout authInfo={authInfo} pageName="watch">
         <Container>
@@ -227,9 +230,9 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
 
         <Container>
           <VideoInfo>
-            <h1 className="title is-4">{clipMeta.title || clipMeta.name}</h1>
+            <h1 className="title is-4">{clipTitle}</h1>
             <h2 className="subtitle is-6">
-              Saved <TimeAgo date={clipMeta.saved} />
+              Uploaded <TimeAgo date={clipMeta.saved} />
               <span style={{ margin: "0px 10px" }}>•</span>
               {prettyBytes(clipMeta.size)}
             </h2>

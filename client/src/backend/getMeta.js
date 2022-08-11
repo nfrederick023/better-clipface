@@ -40,6 +40,7 @@ export default async function getMeta(clipId) {
     mime: mime.lookup(clip.clipName),
     size: stats.size,
     saved: stats.mtimeMs,
+    created: stats.birthtimeMs,
     title: meta.title || null,
     description: meta.description || null,
     createdDate: meta.createdDate || null,
