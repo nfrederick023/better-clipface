@@ -102,7 +102,7 @@ export async function checkSingleClipAuth(req) {
  */
 export async function checkHashedPassword(user, hashedPassword) {
   if (user != "default") {
-    throw "Logging in as non-default user is not yet supported";
+    //throw "Logging in as non-default user is not yet supported";
   }
 
   const userPassword = config.get("user_password");
@@ -139,7 +139,7 @@ export async function makeSingleClipToken(clipName) {
   //console.debug("Generating single clip token for clip:", clipName);
 
   if (!config.has("user_password")) {
-    throw "Can't generate single clip tokens with no configured user password";
+    //throw "Can't generate single clip tokens with no configured user password";
   }
 
   const userPassword = config.get("user_password");
@@ -167,7 +167,7 @@ export async function checkSingleClipToken(clipId) {
   const state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
 
   if (!config.has("user_password")) {
-    throw "Can't validate single clip tokens with no configured user password";
+    //throw "Can't validate single clip tokens with no configured user password";
   }
 
   const result = state.some(clip => clip.id == clipId && !clip.requireAuth);

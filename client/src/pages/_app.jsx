@@ -3,7 +3,9 @@
  */
 import * as cookie from "cookie";
 import { createGlobalStyle } from "styled-components";
+import getConfig from "next/config";
 import { setLocalSettings } from "../localSettings";
+const { publicRuntimeConfig } = getConfig();
 
 const GlobalStyle = createGlobalStyle`
   html {
@@ -23,6 +25,7 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <>
+      <title>{publicRuntimeConfig.pageTitle}</title>
       <GlobalStyle />
       <Component {...pageProps} />
     </>

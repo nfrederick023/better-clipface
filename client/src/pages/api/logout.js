@@ -20,7 +20,7 @@ export default function login(req, res) {
     cookie.serialize("auth", "", {
       expires: new Date("1900-01-01"),
       httpOnly: true,
-      sameSite: true,
+      sameSite: "Strict",
       secure: config.get("secure_cookies"),
       path: "/",
     })

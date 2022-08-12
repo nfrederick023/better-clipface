@@ -2,6 +2,7 @@
  * Pagination component for the clip list page
  */
 
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
 import range from "lodash/range";
@@ -29,6 +30,7 @@ const ClickableTag = styled.span`
 `;
 
 export default function Pagination(props) {
+
   const {
     totalPages,
     currentPage,
@@ -38,14 +40,22 @@ export default function Pagination(props) {
     showLabel,
   } = props;
 
+  const [clipsPerPageDisplay, setclipsPerPageDisplay] = useState(clipsPerPage);
+
+  useEffect(() => {
+    if (!clipsPerPage) {
+      setclipsPerPageDisplay('');
+    } else {
+      setclipsPerPageDisplay(clipsPerPage);
+    }
+  }, [clipsPerPage]);
+
+
   const onFirstPage = currentPage == 0;
   const onLastPage = currentPage == totalPages - 1;
 
   const changeClipsPerPage = (newNumber) => {
-    console.log('number: ' + newNumber);
-    if (!isNaN(newNumber) && newNumber !== 0) {
-      onChangeClipsPerPage && onChangeClipsPerPage(newNumber);
-    }
+    onChangeClipsPerPage && onChangeClipsPerPage(newNumber);
   };
 
   return (
@@ -79,10 +89,10 @@ export default function Pagination(props) {
               </li>
             ))}
 
-            <li>
-              <Popup
+            <li suppressHydrationWarning={true}>
+              {process.browser && <Popup
                 trigger={
-                  <SubmenuButton aria-haspopup="true">
+                  <SubmenuButton >
                     <span className="icon">
                       <i className="fas fa-cog"></i>
                     </span>
@@ -101,7 +111,7 @@ export default function Pagination(props) {
                     <input
                       className="input is-small"
                       type="number"
-                      value={clipsPerPage}
+                      value={clipsPerPageDisplay}
                       onChange={(event) =>
                         changeClipsPerPage(Number(event.target.value))
                       }
@@ -142,7 +152,7 @@ export default function Pagination(props) {
                     </div>
                   </div>
                 </div>
-              </Popup>
+              </Popup>}
             </li>
           </ul>
 
@@ -177,7 +187,7 @@ export default function Pagination(props) {
           </a>
         </nav>
       </PaginationBar>
-    </div>
+    </div >
   );
 }
 

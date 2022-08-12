@@ -105,8 +105,6 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
   // Rehydrate serialized value from getServerSideProps
   currentURL = new URL(currentURL);
 
-  const theaterMode = localSettings.theaterMode;
-
   if (!clip) {
     return <div>No clip specified</div>;
   }
@@ -120,7 +118,6 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
 
   const handleBackClick = () => {
     videoRef.current.pause();
-
     router.push("/");
   };
 
@@ -200,7 +197,7 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
             )}
 
             <button
-              className={"button is-small " + (theaterMode ? "is-info" : "")}
+              className={"button is-small " + (localSettings.theaterMode ? "is-info" : "")}
               onClick={toggleTheaterMode}
             >
               <span className="icon is-small">
@@ -225,11 +222,11 @@ const WatchPage = ({ clipMeta, authInfo, currentURL, video }) => {
           </ButtonRow>
         </Container>
 
-        <VideoContainer className={theaterMode ? "theater-mode" : ""}>
+        <VideoContainer className={localSettings.theaterMode ? "theater-mode" : ""}>
           <video {...videoProps} />
         </VideoContainer>
 
-        {theaterMode && <VideoSpacer />}
+        {localSettings.theaterMode && <VideoSpacer />}
 
         <Container>
           <VideoInfo>

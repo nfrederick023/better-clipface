@@ -2,7 +2,7 @@
  * The base layout of the application
  */
 
-import React, { useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Helmet } from "react-helmet";
 import Toggle from "react-toggle";
@@ -106,10 +106,9 @@ export function ClipfaceLayout({
   const router = useRouter();
   const contentClassName = pageName ? `page-${pageName}` : "";
   const [localSettings, setLocalSettings] = useLocalSettings();
+  const [hasMounted, setHasMounted] = useState(false);
 
-  useEffect(() => {
-    document.title = publicRuntimeConfig.pageTitle;
-  }, []);
+  useEffect(() => { setHasMounted(true) }, []);
 
   const toggleDarkMode = () => {
     setLocalSettings({
@@ -131,18 +130,13 @@ export function ClipfaceLayout({
   return (
     <>
       {localSettings.isDarkmode ? (
-        <Helmet
-          link={[
-            {
-              rel: "stylesheet",
-              href: "https://unpkg.com/bulma-prefers-dark",
-              integrity:
-                "sha384-5kFoflEnYHUHkE+dDg8wj1wdx9k9JELPWJmnxlCwjl0mA7YdbfQfR0TQTsKrvQiW",
-              crossOrigin: "anonymous",
-            },
-          ]}
-        >
-          <body style="background-color: #050505;"></body>
+        <Helmet>
+          <link rel="stylesheet"
+            href="https://unpkg.com/bulma-dark-variant@0.1.2/css/bulma-prefers-dark.css"
+            integrity=
+            "sha384-+O4suC4e+wPpI+J/CjVVRBa0Ucczt7woYuvUIGGns36h/5cvowumaIQMDZBbu0Tz"
+            crossOrigin="anonymous"
+          />
         </Helmet>
       ) : (
         <Helmet></Helmet>
@@ -157,11 +151,13 @@ export function ClipfaceLayout({
                 </HeaderTitle>
               </a>
               <NavbarMenu>
-                <Toggle
-                  icons={false}
-                  checked={localSettings.isDarkmode}
-                  onChange={toggleDarkMode}
-                />
+                {hasMounted &&
+                  <Toggle
+                    icons={false}
+                    checked={localSettings.isDarkmode}
+                    onChange={toggleDarkMode}
+                  />
+                }
                 {authInfo.status == "AUTHENTICATED" && (
                   <a onClick={onSignOut}>
                     Log out
@@ -171,7 +167,6 @@ export function ClipfaceLayout({
             </NavbarContainer>
           </nav>
         </Header>
-
         {pageTitle && (
           <div className="hero-body">
             <div className="container has-text-centered">

@@ -69,9 +69,10 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
   const [videos, setVideos] = useState(videoList)
   const filterBox = useRef();
 
+
   // Focus filter box on load
   useEffect(() => {
-    filterBox.current.focus();
+    //filterBox.current.focus();
     updatePage();
   }, [sort, currentPage, filter, isAscending, clipsPerPage, videos]);
 
@@ -94,7 +95,12 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
 
     setTotalClipCount(clipsList.length);
     const pageCount = Math.ceil(clipsList.length / clipsPerPage)
-    setPageCount(pageCount);
+
+    if (isFinite(pageCount)) {
+      setPageCount(pageCount);
+    } else {
+      setPageCount(1);
+    }
 
     if (currentPage == -1 && pageCount - 1 > 0) {
       setCurrentPage(0);
@@ -146,6 +152,9 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
   };
 
   const handleChangeClipsPerPage = (newClipsPerPage) => {
+    if (newClipsPerPage < 1) {
+      newClipsPerPage = 0;
+    }
     setLocalSettings({ ...localSettings, clipsPerPage: newClipsPerPage });
     setClipsPerPage(newClipsPerPage);
   };

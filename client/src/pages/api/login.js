@@ -27,14 +27,13 @@ export default function login(req, res) {
 
   if (req.body && "password" in req.body) {
     if (userPassword == req.body["password"]) {
-      console.log("User logged in successfully");
 
       hashPassword(userPassword).then((hashedPassword) => {
         res.setHeader(
           "Set-Cookie",
           cookie.serialize("auth", hashedPassword, {
             httpOnly: true,
-            sameSite: true,
+            sameSite: "Strict",
             secure: useSecureCookies,
             path: "/",
             maxAge: 31536000, // One year

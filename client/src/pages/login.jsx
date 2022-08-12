@@ -48,8 +48,6 @@ const LoginPage = ({ authEnabled }) => {
 
     setIsLoading(true);
 
-    console.log("Logging in with password", password);
-
     login(password)
       .then((loggedIn) => {
         if (loggedIn) {
