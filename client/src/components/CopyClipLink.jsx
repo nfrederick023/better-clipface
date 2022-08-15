@@ -5,7 +5,6 @@
 import PropTypes from "prop-types";
 import Tippy from "@tippyjs/react";
 
-import { formatClipURL } from "../util";
 import { useEffect, useState } from "react";
 import updateClip from "../videoAPI";
 import styled from "styled-components";
@@ -91,7 +90,7 @@ export default function CopyClipLink(props) {
   }
 
   const onClick = async (e) => {
-    var clipURL = formatClipURL(clip.id);
+    var clipURL = clip.id;
 
     // If we're making a public link, we need to append a single clip
     // authentication token

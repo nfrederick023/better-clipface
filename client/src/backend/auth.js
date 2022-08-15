@@ -23,8 +23,6 @@ export function useAuth(handler) {
     try {
       if (await checkAuth(req)) {
         return handler(req, res);
-      } else if (await checkSingleClipAuth(req)) {
-        return handler(req, res);
       } else {
         res.statusCode = 401;
         res.end();
@@ -49,13 +47,8 @@ export async function checkAuth(req) {
   // Fetches the auth token (the hashed user password) from the cookie, or
   // null if none is found
   const getAuthToken = () => {
-    const rawCookie = req.headers["cookie"];
-
-    if (!rawCookie) {
-      return null;
-    }
-
-    return cookie.parse(rawCookie)["auth"] || null;
+    const rawCookie = req.cookies.authToken;
+    return rawCookie || null;
   };
 
   // Always succeed auth check when no user authentication has been configured
@@ -66,30 +59,6 @@ export async function checkAuth(req) {
   const authToken = getAuthToken();
 
   return authToken && (await checkHashedPassword("default", authToken));
-}
-
-/**
- * Checks if this request has a valid single clip authentication token
- *
- * @param {http.IncomingMessage} req
- * @returns {Promise<boolean>}
- */
-export async function checkSingleClipAuth(req) {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const clipId = url.pathname.split("/").pop();
-
-  // Paths that should be validated by the single clip auth token
-  const clipPaths = ["/watch", "/api/video"];
-
-  const dirname = path.dirname(url.pathname);
-  //console.log(clipId);
-
-  if (clipId && clipPaths.includes(dirname)) {
-    const singlePageAuthenticated = await checkSingleClipToken(clipId);
-    return singlePageAuthenticated;
-  }
-
-  return false;
 }
 
 /**
@@ -121,60 +90,6 @@ export async function hashPassword(password) {
   const salt = await bcrypt.genSalt();
 
   return await bcrypt.hash(password, salt);
-}
-
-/**
- * Generates a token that will authenticate the user for viewing a single clip.
- *
- * This is done by hashing the name of the clip with the configured user
- * password. This means that all public clip links can be invalidated by
- * changing the user password, or the link for a single clip can be
- * invalidated by renaming the clip.
- *
- * @async
- * @param {string} clipName
- * @returns {string} The token
- */
-export async function makeSingleClipToken(clipName) {
-  //console.debug("Generating single clip token for clip:", clipName);
-
-  if (!config.has("user_password")) {
-    //throw "Can't generate single clip tokens with no configured user password";
-  }
-
-  const userPassword = config.get("user_password");
-
-  const salt = await bcrypt.genSalt();
-  const token = await bcrypt.hash(userPassword + clipName, salt);
-  //console.log(token);
-
-  //console.debug("Generated single clip token:", token);
-
-  return token;
-}
-
-/**
- * Checks if a single page token is valid for the given path
- *
- * @async
- * @param {string} token
- * @param {string} clipName
- * @returns {Promise<boolean>}
- */
-export async function checkSingleClipToken(clipId) {
-  //console.debug("Validating access to ", clipId);
-
-  const state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
-
-  if (!config.has("user_password")) {
-    //throw "Can't validate single clip tokens with no configured user password";
-  }
-
-  const result = state.some(clip => clip.id == clipId && !clip.requireAuth);
-
-  //console.debug("Result", result);
-
-  return result;
 }
 
 /**

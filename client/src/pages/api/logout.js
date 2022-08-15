@@ -17,7 +17,7 @@ export default function login(req, res) {
 
   res.setHeader(
     "Set-Cookie",
-    cookie.serialize("auth", "", {
+    cookie.serialize("authToken", "", {
       expires: new Date("1900-01-01"),
       httpOnly: true,
       sameSite: "Strict",

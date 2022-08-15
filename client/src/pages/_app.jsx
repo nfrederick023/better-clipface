@@ -1,11 +1,12 @@
 /*
  * Custom app component, used to redirect if authentication is missing
  */
-import * as cookie from "cookie";
 import { createGlobalStyle } from "styled-components";
-import getConfig from "next/config";
-import { setLocalSettings } from "../localSettings";
 const { publicRuntimeConfig } = getConfig();
+import { Cookies, CookiesProvider } from "react-cookie";
+import App from "next/app";
+import getConfig from "next/config";
+import "react-toggle/style.css";
 
 const GlobalStyle = createGlobalStyle`
   html {
@@ -19,38 +20,49 @@ const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
     padding-bottom: 33px;
   }
+
+  .react-toggle {
+   right: 10px;
+  }
+  .react-toggle--checked:hover .react-toggle-track {
+    background-color: #3273dc !important;
+  }
+
+  .react-toggle--checked .react-toggle-track {
+    background-color: #3273dc !important;
+  }
+
+  .react-toggle-thumb {
+    box-shadow: 0px 0px 0px 0px #3273dc !important;
+  }
 `;
 
-function MyApp({ Component, pageProps }) {
+function MyApp({ Component, pageProps, allCookies }) {
+  const cookies = new Cookies(allCookies);
+
+  const setCookies = (name, value) => {
+    cookies.set(name, value, { path: '/', sameSite: 'strict', expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)) });
+  }
+  if (typeof allCookies?.theaterMode == 'undefined') setCookies("theaterMode", false);
+  if (typeof allCookies?.videoVolume == 'undefined') setCookies("videoVolume", 1);
+  if (typeof allCookies?.clipsPerPage == 'undefined') setCookies("clipsPerPage", 40);
+  if (typeof allCookies?.isDarkMode == 'undefined') setCookies("isDarkMode", true);
+  if (typeof allCookies?.authToken == 'undefined') setCookies("authToken", "");
 
   return (
     <>
       <title>{publicRuntimeConfig.pageTitle}</title>
       <GlobalStyle />
-      <Component {...pageProps} />
+      <CookiesProvider cookies={cookies}>
+        <Component {...pageProps} />
+      </CookiesProvider>
     </>
   );
 }
 
-// This applies local settings when server side rendering if provided by the
-// localSettings cookie
-MyApp.getInitialProps = async ({ ctx }) => {
-  const parsedCookie = cookie.parse(ctx.req?.headers.cookie || "");
-  let localSettings;
-
-  if ("localSettings" in parsedCookie) {
-    try {
-      localSettings = JSON.parse(parsedCookie["localSettings"]);
-    } catch {
-      // No local settings for us :(
-    }
-  }
-
-  if (localSettings) {
-    setLocalSettings(localSettings);
-  }
-
-  return {};
+MyApp.getInitialProps = async (ctx) => {
+  const appProps = await App.getInitialProps(ctx);
+  return { ...appProps, allCookies: ctx.ctx.req?.cookies };
 };
 
 export default MyApp;

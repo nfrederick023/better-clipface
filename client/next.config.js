@@ -6,4 +6,8 @@ module.exports = {
         headerTitle: config.get("header_title"),
         pageTitle: config.get("page_title"),
     },
+    compiler: {
+        // ssr and displayName are configured by default
+        styledComponents: true,
+    },
 }

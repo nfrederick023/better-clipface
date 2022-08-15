@@ -2,13 +2,11 @@
  * Login handler
  */
 
-import cookie from "cookie";
 import config from "config";
 
 import { hashPassword } from "../../backend/auth";
-import { booleanify } from "../../util";
 
-export default function login(req, res) {
+export default async function login(req, res) {
   // Only POST is allowed on this route
   if (req.method != "POST") {
     res.statusCode = 405;
@@ -23,29 +21,19 @@ export default function login(req, res) {
   }
 
   const userPassword = config.get("user_password");
-  const useSecureCookies = booleanify(config.get("secure_cookies"));
 
   if (req.body && "password" in req.body) {
     if (userPassword == req.body["password"]) {
 
-      hashPassword(userPassword).then((hashedPassword) => {
-        res.setHeader(
-          "Set-Cookie",
-          cookie.serialize("auth", hashedPassword, {
-            httpOnly: true,
-            sameSite: "Strict",
-            secure: useSecureCookies,
-            path: "/",
-            maxAge: 31536000, // One year
-          })
-        );
-        res.end("OK\n");
-      });
-
+      const hashedPassword = await hashPassword(userPassword);
+      res.statusCode = 200;
+      res.end(JSON.stringify({ authToken: hashedPassword }));
       return;
+
     }
   }
 
   res.statusCode = 400;
   res.end("Invalid password\n");
+  return;
 }

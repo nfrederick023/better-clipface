@@ -8,13 +8,14 @@ import styled from "styled-components";
 import TimeAgo from "react-timeago";
 import prettyBytes from "pretty-bytes";
 import debounce from "lodash/debounce";
-
+import { useCookies } from 'react-cookie';
 import Pagination from "../components/Pagination";
 import ClipfaceLayout from "../components/ClipfaceLayout";
 import CopyClipLink from "../components/CopyClipLink";
-import useLocalSettings from "../localSettings";
 import requireAuth from "../backend/requireAuth";
 import Container from "../components/Container";
+import booleanify from "booleanify";
+import { toNumber } from "lodash";
 
 const ClearFilterButton = styled.span`
   cursor: pointer;
@@ -46,10 +47,16 @@ const RowButtons = styled.div`
 `;
 
 const NoVideosPlaceholder = styled.div`
-  min-width: 100%;
-  border: 1px solid #363636;
-  text-align: center;
-  padding: 50px;
+  div {
+    min-width: 100%;
+    border: 1px solid #dbdbdb;
+    text-align: center;
+    padding: 50px;
+  }
+
+  .is-dark {
+    border: 1px solid #363636;
+  }
 `;
 
 const LinkHeader = styled.th`
@@ -59,22 +66,20 @@ const LinkHeader = styled.th`
 const IndexPage = ({ videoList, title, pagination, authInfo }) => {
   const [filter, setFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
-  const [localSettings, setLocalSettings] = useLocalSettings();
   const [clips, setClips] = useState([])
   const [sort, setSort] = useState('saved')
   const [isAscending, setIsAscending] = useState(true)
   const [totalClipCount, setTotalClipCount] = useState(0)
   const [pageCount, setPageCount] = useState(0)
-  const [clipsPerPage, setClipsPerPage] = useState(localSettings.clipsPerPage)
+  const [cookies, setCookies] = useCookies(['clipsPerPage', 'isDarkMode']);
+  const [clipsPerPage, setClipsPerPage] = useState(toNumber(cookies.clipsPerPage) || 40)
   const [videos, setVideos] = useState(videoList)
   const filterBox = useRef();
 
-
   // Focus filter box on load
   useEffect(() => {
-    //filterBox.current.focus();
     updatePage();
-  }, [sort, currentPage, filter, isAscending, clipsPerPage, videos]);
+  }, [sort, currentPage, filter, isAscending, videos]);
 
   const updatePage = () => {
     let clipsList;
@@ -152,11 +157,8 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
   };
 
   const handleChangeClipsPerPage = (newClipsPerPage) => {
-    if (newClipsPerPage < 1) {
-      newClipsPerPage = 0;
-    }
-    setLocalSettings({ ...localSettings, clipsPerPage: newClipsPerPage });
-    setClipsPerPage(newClipsPerPage);
+    setCookies('clipsPerPage', newClipsPerPage < 1 ? 0 : newClipsPerPage, { path: '/' });
+    setClipsPerPage(newClipsPerPage < 1 ? 0 : newClipsPerPage)
   };
 
   const updateVideoList = (clip) => {
@@ -269,7 +271,7 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
         </table>
 
         {clips.length == 0 && (
-          <NoVideosPlaceholder>No clips Found</NoVideosPlaceholder>
+          <NoVideosPlaceholder><div className={booleanify(cookies.isDarkMode) ? 'is-dark' : ''}>No clips Found</div></NoVideosPlaceholder>
         )}
 
         {pagination && (
@@ -288,11 +290,11 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
 };
 
 export const getServerSideProps = requireAuth(async (context) => {
+  let videoList = [];
+
   const config = require("config");
 
   const { checkAuth } = require("../backend/auth");
-
-  let videoList = [];
 
   if (await checkAuth(context.req)) {
     const listClips = require("../backend/listClips").default;

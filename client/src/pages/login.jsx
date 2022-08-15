@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import config from "config";
-
+import { useCookies } from 'react-cookie';
 import ClipfaceLayout from "../components/ClipfaceLayout";
 import Container from "../components/Container";
 
@@ -31,6 +31,7 @@ const LoginPage = ({ authEnabled }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [password, setPassword] = useState("");
+  const [cookies, setCookie] = useCookies(['authToken']);
   const passwordFieldRef = useRef();
 
   useEffect(() => {
@@ -49,8 +50,9 @@ const LoginPage = ({ authEnabled }) => {
     setIsLoading(true);
 
     login(password)
-      .then((loggedIn) => {
-        if (loggedIn) {
+      .then((res) => {
+        if (res?.authToken) {
+          setCookie("authToken", res.authToken, { path: "/" });
           router.push(next);
         } else {
           setIsLoading(false);
@@ -60,7 +62,6 @@ const LoginPage = ({ authEnabled }) => {
       .catch((e) => {
         setIsLoading(false);
         setError("Login failed due to an unexpected error");
-        console.error("Login failed horribly", e);
       });
   };
 
@@ -132,14 +133,13 @@ async function login(password) {
   });
 
   if (response.ok) {
-    return true;
+    return await response.json();
   }
 
-  console.error("Failed to log in", response);
-  return false;
+  return undefined;
 }
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps() {
   // If no user authentication is configured, forward to the index page
   if (!config.has("user_password")) {
     return {

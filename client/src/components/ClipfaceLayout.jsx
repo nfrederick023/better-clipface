@@ -2,15 +2,15 @@
  * The base layout of the application
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
 import { Helmet } from "react-helmet";
 import Toggle from "react-toggle";
-import useLocalSettings from "../localSettings";
 import styled from "styled-components";
 import getConfig from "next/config";
 import Container from "./Container";
-import "react-toggle/style.css";
+import { useCookies } from 'react-cookie';
+import booleanify from 'booleanify';
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -31,21 +31,6 @@ const NavbarMenu = styled.div`
   flex: 1;
   display: flex;
   justify-content: end;
-
-  .react-toggle {
-   right: 10px;
-  }
-  .react-toggle--checked:hover .react-toggle-track {
-    background-color: #3273dc !important;
-  }
-
-  .react-toggle--checked .react-toggle-track {
-    background-color: #3273dc !important;
-  }
-
-  .react-toggle-thumb {
-    box-shadow: 0px 0px 0px 0px #3273dc !important;
-  }
 `;
 
 const ApplicationDiv = styled.div`
@@ -96,26 +81,13 @@ const HeaderTitle = styled.h1`
   font-size: 1.5rem;
 `;
 
-export function ClipfaceLayout({
-  children,
-  authInfo = { status: "NOT_AUTHENTICATED" },
-  pageName = null,
-  pageTitle = null,
-  pageSubtitle = null,
-}) {
+const ClipfaceLayout = ({ children, authInfo = { status: "NOT_AUTHENTICATED" }, pageName, pageTitle, pageSubtitle }) => {
+
+
   const router = useRouter();
   const contentClassName = pageName ? `page-${pageName}` : "";
-  const [localSettings, setLocalSettings] = useLocalSettings();
-  const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => { setHasMounted(true) }, []);
-
-  const toggleDarkMode = () => {
-    setLocalSettings({
-      ...localSettings,
-      isDarkmode: !localSettings.isDarkmode,
-    });
-  };
+  const [cookies, setCookies] = useCookies(['isDarkMode']);
+  const [isDarkMode, setIsDarkMode] = useState(booleanify(cookies.isDarkMode));
 
   const onSignOut = () => {
     logout().then((ok) => {
@@ -127,9 +99,14 @@ export function ClipfaceLayout({
     });
   };
 
+  const toggleDarkMode = () => {
+    setCookies('isDarkMode', !isDarkMode, { path: '/' });
+    setIsDarkMode(!isDarkMode)
+  }
+
   return (
     <>
-      {localSettings.isDarkmode ? (
+      {isDarkMode ? (
         <Helmet>
           <link rel="stylesheet"
             href="https://unpkg.com/bulma-dark-variant@0.1.2/css/bulma-prefers-dark.css"
@@ -151,13 +128,10 @@ export function ClipfaceLayout({
                 </HeaderTitle>
               </a>
               <NavbarMenu>
-                {hasMounted &&
-                  <Toggle
-                    icons={false}
-                    checked={localSettings.isDarkmode}
-                    onChange={toggleDarkMode}
-                  />
-                }
+                <Toggle
+                  icons={false}
+                  checked={isDarkMode}
+                  onChange={toggleDarkMode} />
                 {authInfo.status == "AUTHENTICATED" && (
                   <a onClick={onSignOut}>
                     Log out
@@ -184,16 +158,12 @@ export function ClipfaceLayout({
 
       <Footer>
         <div className="container">
-          {/* <a href="https://github.com/Hubro/clipface" target="_blank">
-            <i className="fab fa-github"></i> Clipface
-          </a> */}
+          Snacks
         </div>
       </Footer>
     </>
   );
 }
-
-export default ClipfaceLayout;
 
 /**
  * Logs out through the API
@@ -208,3 +178,6 @@ async function logout() {
   console.error("Failed to log out", response);
   return false;
 }
+
+
+export default ClipfaceLayout;
