@@ -1,17 +1,25 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
-  "use strict": "true",
+  "env": {
+    "browser": true
+  },
+  "parserOptions": {
+    "project": "./client/tsconfig.json",
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@typescript-eslint/eslint-plugin"
+  ],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended"
   ],
   "rules": {
+    "sort-imports": "error",
     "no-console": "error",
-    "no-loops/no-loops": "error",
-    "jsx-quotes": ["error", "prefer-single"],
+    "@typescript-eslint/explicit-function-return-type": "error",
     "constructor-super": "error",
     "for-direction": "error",
     "getter-return": "error",
@@ -72,6 +80,10 @@
     "no-with": "error",
     "require-yield": "error",
     "use-isnan": "error",
-    "valid-typeof": "error"
+    "valid-typeof": "error",
+    "quotes": [
+      "error",
+      "double"
+    ]
   }
 }

@@ -2,20 +2,23 @@
  * Index page - shows a list of available clips
  */
 
-import { useEffect, useRef, useState } from "react";
-import Router from "next/router";
-import styled from "styled-components";
-import TimeAgo from "react-timeago";
-import prettyBytes from "pretty-bytes";
-import debounce from "lodash/debounce";
-import { useCookies } from 'react-cookie';
-import Pagination from "../components/Pagination";
-import ClipfaceLayout from "../components/ClipfaceLayout";
-import CopyClipLink from "../components/CopyClipLink";
-import requireAuth from "../backend/requireAuth";
+import { Clip, IndexPageProps, LinkTypes, SortTypes } from "../shared/interfaces";
+import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
+
+import ClipfaceLayout from "../components/Layout";
 import Container from "../components/Container";
-import booleanify from "booleanify";
+import CopyClipLink from "../components/CopyLink";
+import Pagination from "../components/Pagination";
+import Router from "next/router";
+import TimeAgo from "react-timeago";
+import config from "config";
+import debounce from "lodash/debounce";
+import listClips from "../backend/listClips";
+import prettyBytes from "pretty-bytes";
+import requireAuth from "../backend/requireAuth";
+import styled from "styled-components";
 import { toNumber } from "lodash";
+import { useCookies } from "react-cookie";
 
 const ClearFilterButton = styled.span`
   cursor: pointer;
@@ -59,47 +62,47 @@ const NoVideosPlaceholder = styled.div`
   }
 `;
 
-const LinkHeader = styled.th`
+const LinkHeader = styled.th<{ width?: string }>`
   cursor: pointer;
 `;
 
-const IndexPage = ({ videoList, title, pagination, authInfo }) => {
+const IndexPage: FC<IndexPageProps> = ({ allClips, pagination, authStatus }) => {
   const [filter, setFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
-  const [clips, setClips] = useState([])
-  const [sort, setSort] = useState('saved')
+  const [clips, setClips] = useState<Clip[]>([])
+  const [sort, setSort] = useState(SortTypes.saved)
   const [isAscending, setIsAscending] = useState(true)
   const [totalClipCount, setTotalClipCount] = useState(0)
   const [pageCount, setPageCount] = useState(0)
-  const [cookies, setCookies] = useCookies(['clipsPerPage', 'isDarkMode']);
+  const [cookies, setCookies] = useCookies(["clipsPerPage", "isDarkMode"]);
   const [clipsPerPage, setClipsPerPage] = useState(toNumber(cookies.clipsPerPage) || 40)
-  const [videos, setVideos] = useState(videoList)
-  const filterBox = useRef();
+  const [intialClipList, setIntialClipList] = useState(allClips)
+  const filterBox = useRef() as MutableRefObject<HTMLInputElement>;
 
   // Focus filter box on load
   useEffect(() => {
     updatePage();
-  }, [sort, currentPage, filter, isAscending, videos]);
+  }, [sort, currentPage, filter, isAscending, intialClipList, clipsPerPage]);
 
-  const updatePage = () => {
-    let clipsList;
+  const updatePage = (): void => {
+    let sortedClips;
 
     // get sorted clips list
-    clipsList = Object.values(videos).sort((a, b) => {
-      return a[sort] - b[sort]
+    sortedClips = Object.values(intialClipList).sort((a, b) => {
+      return (a[SortTypes[sort]] as number) - (b[SortTypes[sort]] as number);
     })
 
     if (isAscending) {
-      clipsList = clipsList.reverse();
+      sortedClips = sortedClips.reverse();
     }
 
     //apply any filters
     if (filter) {
-      clipsList = clipsList.filter((clip) => clip.name.toLowerCase().includes(filter));
+      sortedClips = sortedClips.filter((clip) => clip.name.toLowerCase().includes(filter));
     }
 
-    setTotalClipCount(clipsList.length);
-    const pageCount = Math.ceil(clipsList.length / clipsPerPage)
+    setTotalClipCount(sortedClips.length);
+    const pageCount = Math.ceil(sortedClips.length / clipsPerPage)
 
     if (isFinite(pageCount)) {
       setPageCount(pageCount);
@@ -116,16 +119,16 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
 
     //apply any pagination
     if (pagination) {
-      clipsList = clipsList.slice(
+      sortedClips = sortedClips.slice(
         currentPage * clipsPerPage,
         currentPage * clipsPerPage + clipsPerPage
       )
     }
     //set pages clips
-    setClips(clipsList);
+    setClips(sortedClips);
   }
 
-  const changeSort = (newSort) => {
+  const changeSort = (newSort: SortTypes): void => {
     if (newSort == sort && isAscending) {
       setIsAscending(false);
     } else {
@@ -135,7 +138,7 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
     setSort(newSort);
   }
 
-  const changePage = (pageNumber) => {
+  const changePage = (pageNumber: number): void => {
     setCurrentPage(pageNumber);
   }
 
@@ -143,49 +146,49 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
     setFilter(text)
   }, 50);
 
-  const onFilterChange = (e) => {
-    debouncedSetFilter(e.target.value);
+  const onFilterChange = (searchText: string): void => {
+    debouncedSetFilter(searchText);
   };
 
-  const onClearFilterClick = () => {
+  const onClearFilterClick = (): void => {
     filterBox.current.value = "";
     setFilter("");
   };
 
-  const handleLinkClick = (clipId) => {
+  const handleLinkClick = (clipId: string): void => {
     Router.push(`/watch/${clipId}`);
   };
 
-  const handleChangeClipsPerPage = (newClipsPerPage) => {
-    setCookies('clipsPerPage', newClipsPerPage < 1 ? 0 : newClipsPerPage, { path: '/' });
+  const handleChangeClipsPerPage = (newClipsPerPage: number): void => {
+    setCookies("clipsPerPage", newClipsPerPage < 1 ? 0 : newClipsPerPage, { path: "/" });
     setClipsPerPage(newClipsPerPage < 1 ? 0 : newClipsPerPage)
   };
 
-  const updateVideoList = (clip) => {
-    const newVideoList = videos.filter((video) => { return video.id != clip.id });
-    newVideoList.push(clip);
-    setVideos(newVideoList);
+  const updateVideoList = (selectedClip: Clip): void => {
+    const newVideoList = allClips.filter((clip) => { return clip.id != selectedClip.id });
+    newVideoList.push(selectedClip);
+    setIntialClipList(newVideoList);
   }
 
   return (
-    <ClipfaceLayout authInfo={authInfo} pageName="index" pageTitle={title}>
+    <ClipfaceLayout authStatus={authStatus} pageName='index'>
       <Container>
-        <div className="field">
-          <label className="label">Search</label>
+        <div className='field'>
+          <label className='label'>Search</label>
 
-          <div className="control has-icons-right">
+          <div className='control has-icons-right'>
             <input
-              type="text"
-              className="input"
+              type='text'
+              className='input'
               ref={filterBox}
-              onChange={onFilterChange}
+              onChange={(event): void => onFilterChange(event.target.value)}
             />
 
             <ClearFilterButton
-              className="icon is-right"
+              className='icon is-right'
               onClick={onClearFilterClick}
             >
-              <i className="fas fa-times" />
+              <i className='fas fa-times' />
             </ClearFilterButton>
           </div>
         </div>
@@ -196,32 +199,30 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
             totalPages={pageCount}
             totalClips={totalClipCount}
             clipsPerPage={clipsPerPage}
-            onChangePage={(pageNumber) => changePage(pageNumber)}
+            onChangePage={(pageNumber): void => changePage(pageNumber)}
             onChangeClipsPerPage={handleChangeClipsPerPage}
             showLabel
           />
         )}
 
         <table
-          className="table is-fullwidth is-bordered"
+          className='table is-fullwidth is-bordered'
           style={{ marginBottom: 0 }} // Remove bottom margin added by Bulma
         >
           <thead>
             <tr>
-              <LinkHeader onClick={() => {
-                changeSort("created");
-              }} width="150px">Created</LinkHeader>
-              <LinkHeader onClick={() => {
-                changeSort("saved");
-              }} width="150px">Uploaded</LinkHeader>
-              <LinkHeader onClick={() => {
-                changeSort("size");
-              }}
-                width="100px">Size</LinkHeader>
-              <LinkHeader onClick={() => {
-                changeSort("name");
-              }}
-              >Name</LinkHeader>
+              <LinkHeader onClick={(): void => { changeSort(SortTypes.created); }} width='150px'>
+                Created
+              </LinkHeader>
+              <LinkHeader onClick={(): void => { changeSort(SortTypes.saved); }} width='150px'>
+                Uploaded
+              </LinkHeader>
+              <LinkHeader onClick={(): void => { changeSort(SortTypes.size); }} width='100px'>
+                Size
+              </LinkHeader>
+              <LinkHeader onClick={(): void => { changeSort(SortTypes.name); }}>
+                Name
+              </LinkHeader>
             </tr>
           </thead>
 
@@ -229,7 +230,7 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
             {clips.map((clip) => (
               <LinkRow
                 key={clip.name}
-                onClick={() => {
+                onClick={(): void => {
                   handleLinkClick(clip.id);
                 }}
               >
@@ -241,24 +242,24 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
                 </td>
                 <td>{prettyBytes(clip.size)}</td>
                 <td>
-                  {clip.title || clip.name.split('.').slice(0, -1).join('.')}
+                  {clip.title || clip.name.split(".").slice(0, -1).join(".")}
 
                   <RowButtons>
-                    <CopyClipLink clip={clip} noText copyLink />
+                    <CopyClipLink clip={clip} noText={true} linkType={LinkTypes.copyLink} />
 
-                    {authInfo.status == "AUTHENTICATED" && (
+                    {authStatus == "AUTHENTICATED" && (
                       // There's no point in showing the "Copy public link"
                       // button if Clipface is not password protected
                       <>
                         {
                           clip.requireAuth ?
-                            <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText privateLink /> :
-                            <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText publicLink />
+                            <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText={true} linkType={LinkTypes.privateLink} /> :
+                            <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText={true} linkType={LinkTypes.publicLink} />
                         }
                         {
                           clip.isFavorite ?
-                            <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText favoriteLink /> :
-                            <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText unfavoriteLink />
+                            <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText={true} linkType={LinkTypes.favoriteLink} /> :
+                            <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText={true} linkType={LinkTypes.unfavoriteLink} />
                         }
                       </>
                     )}
@@ -271,17 +272,18 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
         </table>
 
         {clips.length == 0 && (
-          <NoVideosPlaceholder><div className={booleanify(cookies.isDarkMode) ? 'is-dark' : ''}>No clips Found</div></NoVideosPlaceholder>
+          <NoVideosPlaceholder><div className={cookies.isDarkMode === "true" ? "is-dark" : ""}>No clips Found</div></NoVideosPlaceholder>
         )}
 
         {pagination && (
           <Pagination
+            showLabel={false}
             currentPage={currentPage}
             totalPages={pageCount}
             totalClips={totalClipCount}
             clipsPerPage={clipsPerPage}
             onChangeClipsPerPage={handleChangeClipsPerPage}
-            onChangePage={(newPageNumber) => setCurrentPage(newPageNumber)}
+            onChangePage={(newPageNumber): void => setCurrentPage(newPageNumber)}
           />
         )}
       </Container>
@@ -289,27 +291,14 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
   );
 };
 
-export const getServerSideProps = requireAuth(async (context) => {
-  let videoList = [];
-
-  const config = require("config");
-
-  const { checkAuth } = require("../backend/auth");
-
-  if (await checkAuth(context.req)) {
-    const listClips = require("../backend/listClips").default;
-
-    videoList = await listClips();
-  }
-
+export const getServerSideProps = requireAuth(async () => {
+  let allClips: Clip[] = [];
+  allClips = await listClips();
   return {
     props: {
-      videoList,
+      allClips,
       pagination: config.get("pagination"),
-      title: config.has("clips_page_title")
-        ? config.get("clips_page_title")
-        : null,
-    },
+    }
   };
 });
 

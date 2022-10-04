@@ -2,11 +2,12 @@
  * Pagination component for the clip list page
  */
 
-import { useEffect, useState } from "react";
-import PropTypes from "prop-types";
-import styled from "styled-components";
-import range from "lodash/range";
+import { FC, useEffect, useState } from "react";
+
+import { PaginationProps } from "../shared/interfaces";
 import Popup from "reactjs-popup";
+import range from "lodash/range";
+import styled from "styled-components";
 
 const PaginationBar = styled.div`
   margin: 10px 0px;
@@ -29,32 +30,24 @@ const ClickableTag = styled.span`
   cursor: pointer;
 `;
 
-export default function Pagination(props) {
-
-  const {
-    totalPages,
-    currentPage,
-    clipsPerPage,
-    onChangePage,
-    onChangeClipsPerPage,
-    showLabel,
-  } = props;
+const Pagination: FC<PaginationProps> = ({ totalPages, currentPage, clipsPerPage, onChangePage, onChangeClipsPerPage, showLabel }) => {
 
   const [clipsPerPageDisplay, setclipsPerPageDisplay] = useState(clipsPerPage);
+  let showAsModal = false;
 
   useEffect(() => {
     if (!clipsPerPage) {
-      setclipsPerPageDisplay('');
+      setclipsPerPageDisplay("");
     } else {
       setclipsPerPageDisplay(clipsPerPage);
     }
+    showAsModal = window.innerWidth < 768;
   }, [clipsPerPage]);
-
 
   const onFirstPage = currentPage == 0;
   const onLastPage = currentPage == totalPages - 1;
 
-  const changeClipsPerPage = (newNumber) => {
+  const changeClipsPerPage = (newNumber: number): void => {
     onChangeClipsPerPage && onChangeClipsPerPage(newNumber);
   };
 
@@ -71,12 +64,12 @@ export default function Pagination(props) {
                   className={
                     "pagination-link" + (currentPage == i ? " is-current" : "")
                   }
-                  onTouchStart={() => {
+                  onTouchStart={(): void => {
                     if (i != currentPage) {
                       onChangePage(i);
                     }
                   }}
-                  onMouseDown={(e) => {
+                  onMouseDown={(e): void => {
                     e.preventDefault(); // Prevents grabbing focus
 
                     if (i != currentPage) {
@@ -90,7 +83,7 @@ export default function Pagination(props) {
             ))}
 
             <li suppressHydrationWarning={true}>
-              {process.browser && <Popup
+              {typeof window === "undefined" && <Popup
                 trigger={
                   <SubmenuButton >
                     <span className="icon">
@@ -101,10 +94,11 @@ export default function Pagination(props) {
                 overlayStyle={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
                 // On screens narrower than 768, show the settings popup as a
                 // modal rather than a dropdown menu
-                modal={typeof window !== "undefined" && window.innerWidth < 768}
+                modal={showAsModal}
                 repositionOnResize
                 keepTooltipInside="body"
               >
+
                 <div className="dropdown-content">
                   <div className="dropdown-item">Clips per page:</div>
                   <div className="dropdown-item">
@@ -112,7 +106,7 @@ export default function Pagination(props) {
                       className="input is-small"
                       type="number"
                       value={clipsPerPageDisplay}
-                      onChange={(event) =>
+                      onChange={(event): void =>
                         changeClipsPerPage(Number(event.target.value))
                       }
                     />
@@ -121,31 +115,31 @@ export default function Pagination(props) {
                     <div className="tags" style={{ flexWrap: "nowrap" }}>
                       <ClickableTag
                         className="tag is-info"
-                        onClick={() => changeClipsPerPage(20)}
+                        onClick={(): void => changeClipsPerPage(20)}
                       >
                         20
                       </ClickableTag>
                       <ClickableTag
                         className="tag is-info"
-                        onClick={() => changeClipsPerPage(40)}
+                        onClick={(): void => changeClipsPerPage(40)}
                       >
                         40
                       </ClickableTag>
                       <ClickableTag
                         className="tag is-primary"
-                        onClick={() => changeClipsPerPage(80)}
+                        onClick={(): void => changeClipsPerPage(80)}
                       >
                         80
                       </ClickableTag>
                       <ClickableTag
                         className="tag is-warning"
-                        onClick={() => changeClipsPerPage(150)}
+                        onClick={(): void => changeClipsPerPage(150)}
                       >
                         150
                       </ClickableTag>
                       <ClickableTag
                         className="tag is-danger"
-                        onClick={() => changeClipsPerPage(300)}
+                        onClick={(): void => changeClipsPerPage(300)}
                       >
                         300
                       </ClickableTag>
@@ -158,13 +152,12 @@ export default function Pagination(props) {
 
           <a
             className="pagination-previous"
-            onClick={() => {
+            onClick={(): void => {
               if (onFirstPage) return;
 
               onChangePage(currentPage - 1);
             }}
             style={{ order: 3, padding: "5px 3px" }}
-            disabled={onFirstPage}
           >
             <span className="icon">
               <i className="fas fa-caret-left"></i>
@@ -173,13 +166,12 @@ export default function Pagination(props) {
 
           <a
             className="pagination-next"
-            onClick={() => {
+            onClick={(): void => {
               if (onLastPage) return;
 
               onChangePage(currentPage + 1);
             }}
             style={{ order: 3, padding: "5px 3px" }}
-            disabled={onLastPage}
           >
             <span className="icon">
               <i className="fas fa-caret-right"></i>
@@ -191,12 +183,4 @@ export default function Pagination(props) {
   );
 }
 
-Pagination.propTypes = {
-  totalPages: PropTypes.number.isRequired,
-  currentPage: PropTypes.number.isRequired,
-  totalClips: PropTypes.number.isRequired,
-  clipsPerPage: PropTypes.number.isRequired,
-  onChangePage: PropTypes.func.isRequired,
-  onChangeClipsPerPage: PropTypes.func.isRequired,
-  showLabel: PropTypes.bool,
-};
+export default Pagination;

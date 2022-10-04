@@ -4,10 +4,12 @@
  * All this does is remove the auth cookie.
  */
 
-import cookie from "cookie";
-import config from "config";
+import { Request, Response } from "express";
 
-export default function login(req, res) {
+import config from "config";
+import cookie from "cookie";
+
+const logout = (req: Request, res: Response): void => {
   // Only POST is allowed on this route
   if (req.method != "POST") {
     res.statusCode = 405;
@@ -20,10 +22,12 @@ export default function login(req, res) {
     cookie.serialize("authToken", "", {
       expires: new Date("1900-01-01"),
       httpOnly: true,
-      sameSite: "Strict",
+      sameSite: "strict",
       secure: config.get("secure_cookies"),
       path: "/",
     })
   );
   res.end("OK\n");
 }
+
+export default logout;

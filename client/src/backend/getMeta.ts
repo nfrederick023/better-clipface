@@ -2,13 +2,12 @@
  * Exports a function for fetching clip metadata
  */
 
+import { Clip } from "../shared/interfaces";
+import config from "config";
 import fs from "fs";
 import path from "path";
-import config from "config";
-import * as mime from "mime-types";
 
-const fse = require('fs-extra');
-const CLIPS_PATH = config.get("clips_path");
+const CLIPS_PATH: string = config.get("clips_path");
 
 /**
  * Returns metadata for a clip
@@ -16,33 +15,14 @@ const CLIPS_PATH = config.get("clips_path");
  * @param {string} clipFileName The name of the clip including the file extension
  * @returns {object}
  */
-export default async function getMeta(clipId) {
-  const state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
-  let clip = state.find((clip) => { return clip.id == clipId });
-  if (!clip || !clip.name) {
+const getMeta = async (clipId: string): Promise<Clip | void> => {
+  const state = await JSON.parse(fs.readFileSync(path.join(CLIPS_PATH, "/assets/state.json")).toString());
+  const currentClip: Clip = state.find((clip: Clip) => { return clip.id == clipId });
+  if (!currentClip || !currentClip.name) {
     return;
   }
-  const clipFullPath = path.join(CLIPS_PATH, clip.name);
-  const stats = fs.statSync(clipFullPath);
-  const clipBaseName = path.basename(clip.name, path.extname(clip.name));
 
-  let meta = null;
-  const metadataPath = path.join(CLIPS_PATH, clipBaseName + ".json");
-
-  try {
-    meta = JSON.parse(fs.readFileSync(metadataPath));
-  } catch {
-    meta = {};
-  }
-
-  return {
-    name: clip.clipName,
-    mime: mime.lookup(clip.clipName),
-    size: stats.size,
-    saved: stats.mtimeMs,
-    created: stats.birthtimeMs,
-    title: meta.title || null,
-    description: meta.description || null,
-    createdDate: meta.createdDate || null,
-  };
+  return currentClip || null;
 }
+
+export default getMeta;

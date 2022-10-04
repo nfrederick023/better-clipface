@@ -2,25 +2,25 @@
  * Login handler
  */
 
-import config from "config";
+import { Request, Response } from "express";
 
+import config from "config";
 import { hashPassword } from "../../backend/auth";
 
-export default async function login(req, res) {
+const login = async (req: Request, res: Response): Promise<undefined> => {
   // Only POST is allowed on this route
   if (req.method != "POST") {
     res.statusCode = 405;
     res.end();
     return;
   }
-
   if (!config.has("user_password")) {
     res.statusCode = 400;
     res.end("User authentication not configured\n");
     return;
   }
 
-  const userPassword = config.get("user_password");
+  const userPassword: string = config.get("user_password");
 
   if (req.body && "password" in req.body) {
     if (userPassword == req.body["password"]) {
@@ -37,3 +37,5 @@ export default async function login(req, res) {
   res.end("Invalid password\n");
   return;
 }
+
+export default login;

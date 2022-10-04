@@ -2,22 +2,25 @@
  * Watch page - this is where the video is displayed
  */
 
-import { useRouter } from "next/router";
-import Head from "next/head";
-import { useEffect, useRef, useState } from "react";
-import styled from "styled-components";
-import TimeAgo from "react-timeago";
-import prettyBytes from "pretty-bytes";
-import ReactMarkdown from "react-markdown";
-import getConfig from "next/config";
-import { useCookies } from 'react-cookie';
-import ClipfaceLayout from "../../components/ClipfaceLayout";
-import CopyClipLink from "../../components/CopyClipLink";
-import requireAuth from "../../backend/requireAuth";
+import { Clip, LinkTypes, WatchPageProps } from "../../shared/interfaces";
+import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
+import { NextPageContext, Redirect } from "next";
+
+import ClipfaceLayout from "../../components/Layout";
 import Container from "../../components/Container";
-import path from "path";
+import CopyClipLink from "../../components/CopyLink";
+import Head from "next/head";
+import ReactMarkdown from "react-markdown";
+import TimeAgo from "react-timeago";
 import config from "config";
-import booleanify from "booleanify";
+import fse from "fs-extra";
+import getConfig from "next/config";
+import path from "path";
+import prettyBytes from "pretty-bytes";
+import requireAuth from "../../backend/requireAuth";
+import styled from "styled-components";
+import { useCookies } from "react-cookie";
+import { useRouter } from "next/router";
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -88,16 +91,16 @@ const VideoDescription = styled.div`
   margin-top: 25px;
 `;
 
-const WatchPage = ({ clipMeta, authInfo, video }) => {
+const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
   const router = useRouter();
-  const videoRef = useRef();
-  const [cookies, setCookie] = useCookies(['theaterMode', 'videoVolume']);
-  const [theaterMode, setTheaterMode] = useState(booleanify(cookies.theaterMode) || false);
-  const [videoVolume, setVideoVolume] = useState(parseFloat(cookies.videoVolume) || 1)
-  const [clip, setClip] = useState(video);
-  const [currentURL, setCurrentURL] = useState('');
-  const [fullVideoURL, setFullVideoURL] = useState('');
-  const clipTitle = clip.name.split('.').slice(0, -1).join('.');
+  const videoRef = useRef() as MutableRefObject<HTMLVideoElement>;
+  const [cookies, setCookie] = useCookies(["theaterMode", "videoVolume"]);
+  const [theaterMode, setTheaterMode] = useState(cookies.theaterMode === "true");
+  const [videoVolume, setVideoVolume] = useState(parseFloat(cookies.videoVolume))
+  const [clip, setClip] = useState(selectedClip);
+  const [currentURL, setCurrentURL] = useState("");
+  const [fullVideoURL, setFullVideoURL] = useState("");
+  const clipTitle = clip.name.split(".").slice(0, -1).join(".");
 
   // The video volume can't be set directly on the element for some reason, so
   // we set it immediately after rendering
@@ -105,46 +108,47 @@ const WatchPage = ({ clipMeta, authInfo, video }) => {
     const url = new URL(window.location.href)
     setCurrentURL(window.location.href);
     setFullVideoURL(`${url.protocol}//${url.host}${videoSrc}`);
-    if (clip && clipMeta) {
+    if (clip) {
       document.title = clipTitle + " - " + publicRuntimeConfig.pageTitle;
     }
-    videoRef.current.volume = videoVolume;
+    videoRef.current.volume = videoVolume
   }, [clip]);
 
-  if (!clip) {
-    return <div>No clip specified</div>;
-  }
 
-  if (!clipMeta) {
+
+  if (!clip) {
     return <div>404 Clip Not Found</div>;
   }
 
-  const handleBackClick = () => {
+  const handleBackClick = (): void => {
     videoRef.current.pause();
     router.push("/");
   };
 
-  const handleVideoError = (e) => {
-    console.log("VIDEO ERROR", e.target.error);
-  };
-
   const videoSrc = "/api/video/" + encodeURIComponent(clip.id);
 
-  const handleVolumeChange = (e) => {
-    setCookie('videoVolume', videoRef.current.volume, { path: '/' });
-    setVideoVolume(videoRef.current.volume);
+  const handleVolumeChange = (): void => {
+
+    let volume: number;
+    if (videoRef.current.muted || videoRef.current.volume === 0) {
+      volume = 0;
+    } else {
+      volume = videoRef.current.volume;
+    }
+    setCookie("videoVolume", volume, { path: "/" });
+    setVideoVolume(volume)
   };
 
-  const toggleTheaterMode = () => {
-    setCookie('theaterMode', !theaterMode, { path: '/' });
+  const toggleTheaterMode = (): void => {
+    setCookie("theaterMode", !theaterMode, { path: "/" });
     setTheaterMode(!theaterMode);
   };
 
   const videoProps = {
+    id: "video",
     src: videoSrc,
     controls: true,
     autoPlay: true,
-    onError: handleVideoError,
     onVolumeChange: handleVolumeChange,
     style: { outline: "none" },
     ref: videoRef,
@@ -152,34 +156,31 @@ const WatchPage = ({ clipMeta, authInfo, video }) => {
 
   return (
     <>
-
       <>
         <Head>
           <title>{clipTitle + " - " + publicRuntimeConfig.pageTitle}</title>
-          <meta property="og:type" value="video.other" />
-          <meta property="og:site_name" value={publicRuntimeConfig.pageTitle} />
-          <meta property="og:title" value={clipTitle} />
-          <meta property="og:url" value={currentURL} />
-
+          <meta property="og:type" data-value="video.other" />
+          <meta property="og:site_name" data-value={publicRuntimeConfig.pageTitle} />
+          <meta property="og:title" data-value={clipTitle} />
+          <meta property="og:url" data-value={currentURL} />
           {
-            clipMeta.description && (
-              <meta property="og:description" value={clipMeta.description} />
+            clip.description && (
+              <meta property="og:description" data-value={clip.description} />
             )
           }
-
-          <meta property="og:video" value={fullVideoURL} />
-          <meta property="og:video:url" value={fullVideoURL} />
-          <meta property="og:video:secure_url" value={fullVideoURL} />
-          <meta property="og:video:type" content={clipMeta.mime} />
+          <meta property="og:video" data-value={fullVideoURL} />
+          <meta property="og:video:url" data-value={fullVideoURL} />
+          <meta property="og:video:secure_url" data-value={fullVideoURL} />
+          <meta property="og:video:type" content={clip.mime} />
           <meta property="og:video:width" content="1280" />
           <meta property="og:video:height" content="720" />
         </Head >
       </>
-      <ClipfaceLayout authInfo={authInfo} pageName="watch">
+      <ClipfaceLayout authStatus={authStatus} pageName="watch">
         <Container>
           <ButtonRow>
             {/* Only show "Back to clips" button to authenticated users */}
-            {authInfo.status == "AUTHENTICATED" && (
+            {authStatus == "AUTHENTICATED" && (
               <BackLink onClick={handleBackClick}>
                 <span className="icon">
                   <i className="fas fa-arrow-alt-circle-left"></i>
@@ -188,7 +189,7 @@ const WatchPage = ({ clipMeta, authInfo, video }) => {
               </BackLink>
             )}
 
-            {authInfo.status == "SINGLE_PAGE_AUTHENTICATED" && (
+            {authStatus == "SINGLE_PAGE_AUTHENTICATED" && (
               <SingleClipAuthNotice>
                 <InlineIcon className="fas fa-info-circle" />
                 You are using a public link for this clip
@@ -205,14 +206,14 @@ const WatchPage = ({ clipMeta, authInfo, video }) => {
               <span>Theater mode</span>
             </button>
             {/* Only show link copying buttons to authenticated users */}
-            {authInfo.status == "AUTHENTICATED" && (
+            {authStatus == "AUTHENTICATED" && (
               <>
-                <CopyClipLink clip={clip} copyLink />
-                {clip.requireAuth ? <CopyClipLink clip={clip} updateVideoList={setClip} privateLink /> :
-                  <CopyClipLink clip={clip} updateVideoList={setClip} publicLink />
+                <CopyClipLink clip={clip} noText={true} linkType={LinkTypes.copyLink} />
+                {clip.requireAuth ? <CopyClipLink clip={clip} noText={true} updateVideoList={setClip} linkType={LinkTypes.privateLink} /> :
+                  <CopyClipLink clip={clip} noText={true} updateVideoList={setClip} linkType={LinkTypes.publicLink} />
                 }
-                {clip.isFavorite ? <CopyClipLink clip={clip} updateVideoList={setClip} favoriteLink /> :
-                  <CopyClipLink clip={clip} updateVideoList={setClip} unfavoriteLink />
+                {clip.isFavorite ? <CopyClipLink clip={clip} noText={true} updateVideoList={setClip} linkType={LinkTypes.favoriteLink} /> :
+                  <CopyClipLink clip={clip} noText={true} updateVideoList={setClip} linkType={LinkTypes.unfavoriteLink} />
                 }
 
               </>
@@ -221,8 +222,8 @@ const WatchPage = ({ clipMeta, authInfo, video }) => {
         </Container>
 
         <>
-          <VideoContainer className={theaterMode ? "theater-mode" : ""}>
-            <video {...videoProps} />
+          <VideoContainer className={theaterMode ? "theater-mode" : ""} noPadding={false}>
+            <video {...videoProps}><div> lalalalala</div> </video>
           </VideoContainer>
 
           {theaterMode && <VideoSpacer />}
@@ -232,18 +233,18 @@ const WatchPage = ({ clipMeta, authInfo, video }) => {
           <VideoInfo>
             <h1 className="title is-4">{clipTitle}</h1>
             <h2 className="subtitle is-6">
-              Uploaded <TimeAgo date={clipMeta.saved} />
+              Uploaded <TimeAgo date={clip.saved} />
               <span style={{ margin: "0px 10px" }}>•</span>
-              {prettyBytes(clipMeta.size)}
+              {prettyBytes(clip.size)}
             </h2>
 
-            {clipMeta.title && <em>Filename: {clipMeta.name}</em>}
+            {clip.title && <em>Filename: {clip.name}</em>}
 
             <hr />
 
-            {clipMeta.description && (
+            {clip.description && (
               <VideoDescription className="content">
-                <ReactMarkdown>{clipMeta.description}</ReactMarkdown>
+                <ReactMarkdown>{clip.description}</ReactMarkdown>
               </VideoDescription>
             )}
           </VideoInfo>
@@ -253,24 +254,22 @@ const WatchPage = ({ clipMeta, authInfo, video }) => {
   );
 };
 
-export const getServerSideProps = requireAuth(async ({ query, req }) => {
-  const getMeta = require("../../backend/getMeta").default;
-  const fse = require('fs-extra');
-  const CLIPS_PATH = config.get("clips_path");
+export const getServerSideProps = requireAuth(async (ctx: NextPageContext) => {
+  const CLIPS_PATH: string = config.get("clips_path");
 
+  const clipId: string = ctx.query.id as string;
   const state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
-  let clip = state.find((clip) => { return clip.id == query.id });
-  let clipMeta = await getMeta(query.id);
+  const selectedClip = state.find((clip: Clip) => { return clip.id == clipId });
 
-  if (!clipMeta) {
-    clipMeta = '';
+  if (selectedClip?.requireAuth) {
+    const redirect: Redirect = {
+      destination: "/login?next=" + encodeURIComponent(ctx?.req?.url ? ctx?.req?.url : ""),
+      permanent: false,
+    }
+    return { redirect };
   }
-  if (!clip) {
-    clip = '';
-  }
-
   return {
-    props: { clipMeta, video: clip },
+    props: { selectedClip },
   };
 });
 

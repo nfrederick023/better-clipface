@@ -2,10 +2,11 @@
  * API route for downloading clips by name
  */
 
-import { useAuth } from "../../backend/auth";
-import { updateVideo } from "../../backend/videoDAO";
+import { Request, Response } from "express";
 
-export default useAuth(async (req, res) => {
+import updateVideo from "../../backend/videoDAO";
+
+const useAuth = (async (req: Request, res: Response): Promise<void> => {
 
     if (req.method === "PUT") {
         const body = await updateVideo(req.body);
@@ -23,3 +24,5 @@ export default useAuth(async (req, res) => {
     res.statusCode = 404;
     res.end();
 });
+
+export default useAuth

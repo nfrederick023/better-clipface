@@ -2,15 +2,17 @@
  * The base layout of the application
  */
 
-import { useState } from "react";
-import { useRouter } from "next/router";
-import { Helmet } from "react-helmet";
-import Toggle from "react-toggle";
-import styled from "styled-components";
-import getConfig from "next/config";
+import { FC, useState } from "react";
+
 import Container from "./Container";
-import { useCookies } from 'react-cookie';
-import booleanify from 'booleanify';
+import { Helmet } from "react-helmet";
+import { LayoutProps } from "../shared/interfaces";
+import Toggle from "react-toggle";
+import { boolean } from "boolean";
+import getConfig from "next/config";
+import styled from "styled-components";
+import { useCookies } from "react-cookie";
+import { useRouter } from "next/router";
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -81,26 +83,25 @@ const HeaderTitle = styled.h1`
   font-size: 1.5rem;
 `;
 
-const ClipfaceLayout = ({ children, authInfo = { status: "NOT_AUTHENTICATED" }, pageName, pageTitle, pageSubtitle }) => {
-
+const ClipfaceLayout: FC<LayoutProps> = ({ children, authStatus = { status: "NOT_AUTHENTICATED" }, pageName }) => {
 
   const router = useRouter();
   const contentClassName = pageName ? `page-${pageName}` : "";
-  const [cookies, setCookies] = useCookies(['isDarkMode']);
-  const [isDarkMode, setIsDarkMode] = useState(booleanify(cookies.isDarkMode));
+  const [cookies, setCookies] = useCookies(["isDarkMode"]);
+  const [isDarkMode, setIsDarkMode] = useState(boolean(cookies.isDarkMode));
 
-  const onSignOut = () => {
+  const onSignOut = (): void => {
     logout().then((ok) => {
       if (ok) {
         router.push("/login");
       } else {
-        alert("Failed to log out, please check your network connection");
+        alert("Failed to log out!");
       }
     });
   };
 
-  const toggleDarkMode = () => {
-    setCookies('isDarkMode', !isDarkMode, { path: '/' });
+  const toggleDarkMode = (): void => {
+    setCookies("isDarkMode", !isDarkMode, { path: "/" });
     setIsDarkMode(!isDarkMode)
   }
 
@@ -132,7 +133,7 @@ const ClipfaceLayout = ({ children, authInfo = { status: "NOT_AUTHENTICATED" }, 
                   icons={false}
                   checked={isDarkMode}
                   onChange={toggleDarkMode} />
-                {authInfo.status == "AUTHENTICATED" && (
+                {authStatus == "AUTHENTICATED" && (
                   <a onClick={onSignOut}>
                     Log out
                   </a>
@@ -141,15 +142,6 @@ const ClipfaceLayout = ({ children, authInfo = { status: "NOT_AUTHENTICATED" }, 
             </NavbarContainer>
           </nav>
         </Header>
-        {pageTitle && (
-          <div className="hero-body">
-            <div className="container has-text-centered">
-              <p className="title">{pageTitle}</p>
-
-              {pageSubtitle && <p className="subtitle">{subtitle}</p>}
-            </div>
-          </div>
-        )}
       </section>
 
       <ApplicationDiv className={contentClassName}>
@@ -168,14 +160,13 @@ const ClipfaceLayout = ({ children, authInfo = { status: "NOT_AUTHENTICATED" }, 
 /**
  * Logs out through the API
  */
-async function logout() {
+async function logout(): Promise<boolean> {
   const response = await fetch("/api/logout", { method: "POST" });
 
   if (response.ok) {
     return true;
   }
 
-  console.error("Failed to log out", response);
   return false;
 }
 

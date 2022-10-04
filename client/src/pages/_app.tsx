@@ -1,12 +1,20 @@
 /*
  * Custom app component, used to redirect if authentication is missing
  */
-import { createGlobalStyle } from "styled-components";
-const { publicRuntimeConfig } = getConfig();
-import { Cookies, CookiesProvider } from "react-cookie";
-import App from "next/app";
-import getConfig from "next/config";
+
 import "react-toggle/style.css";
+
+import { Cookies, CookiesProvider } from "react-cookie";
+import { NextPage, NextPageContext } from "next";
+
+import { AppContext } from "next/app";
+import { MyAppProps } from "../shared/interfaces";
+import { ReactElement } from "react";
+import { Request } from "express";
+import { createGlobalStyle } from "styled-components";
+import getConfig from "next/config";
+
+const { publicRuntimeConfig } = getConfig();
 
 const GlobalStyle = createGlobalStyle`
   html {
@@ -37,18 +45,17 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-function MyApp({ Component, pageProps, allCookies }) {
+const MyApp: NextPage<MyAppProps> = ({ Component, pageProps, allCookies }: MyAppProps): ReactElement => {
   const cookies = new Cookies(allCookies);
 
-  const setCookies = (name, value) => {
-    cookies.set(name, value, { path: '/', sameSite: 'strict', expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)) });
+  const setCookies = (name: string, value: string | boolean | number): void => {
+    cookies.set(name, value, { path: "/", sameSite: "strict", expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)) });
   }
-  if (typeof allCookies?.theaterMode == 'undefined') setCookies("theaterMode", false);
-  if (typeof allCookies?.videoVolume == 'undefined') setCookies("videoVolume", 1);
-  if (typeof allCookies?.clipsPerPage == 'undefined') setCookies("clipsPerPage", 40);
-  if (typeof allCookies?.isDarkMode == 'undefined') setCookies("isDarkMode", true);
-  if (typeof allCookies?.authToken == 'undefined') setCookies("authToken", "");
-
+  if (typeof allCookies?.theaterMode == "undefined") setCookies("theaterMode", false);
+  if (typeof allCookies?.videoVolume == "undefined") setCookies("videoVolume", 1);
+  if (typeof allCookies?.clipsPerPage == "undefined") setCookies("clipsPerPage", 40);
+  if (typeof allCookies?.isDarkMode == "undefined") setCookies("isDarkMode", true);
+  if (typeof allCookies?.authToken == "undefined") setCookies("authToken", "");
   return (
     <>
       <title>{publicRuntimeConfig.pageTitle}</title>
@@ -60,9 +67,10 @@ function MyApp({ Component, pageProps, allCookies }) {
   );
 }
 
-MyApp.getInitialProps = async (ctx) => {
-  const appProps = await App.getInitialProps(ctx);
-  return { ...appProps, allCookies: ctx.ctx.req?.cookies };
+MyApp.getInitialProps = async (ctx: NextPageContext): Promise<MyAppProps> => {
+  const context = ctx as unknown as AppContext;
+  const request = context.ctx.req as Request;
+  return { allCookies: request.cookies };
 };
 
 export default MyApp;

@@ -2,6 +2,7 @@
  * Function for creating a single page token
  */
 
+
 /**
  * Creates a single page token using the API
  *
@@ -9,8 +10,7 @@
  * @param {string} clipName The clip name that the new token will be valid for
  * @returns {Promise<object>}
  */
-export default async function createSinglePageToken(clipName) {
-  console.log("Requesting a single page token for path", clipName);
+const createSinglePageToken = async (clipName: string): Promise<Response> => {
 
   const response = await fetch("/api/create-single-clip-token", {
     method: "POST",
@@ -22,3 +22,5 @@ export default async function createSinglePageToken(clipName) {
 
   return data["token"];
 }
+
+export default createSinglePageToken;

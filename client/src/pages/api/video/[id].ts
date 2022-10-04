@@ -2,20 +2,25 @@
  * API route for downloading clips by name
  */
 
-import fs from "fs";
-import path from "path";
-import config from "config";
 import * as mime from "mime-types";
 
-import { useAuth } from "../../../backend/auth";
+import { Request, Response } from "express";
 
-const fse = require('fs-extra');
-const CLIPS_PATH = config.get("clips_path");
+import { Clip } from "../../../shared/interfaces";
+import { NodeHeaders } from "next/dist/server/web/types";
+import config from "config";
+import fs from "fs";
+import fse from "fs-extra";
+import isAuthorized from "../../../backend/auth";
+import path from "path";
 
-export default useAuth(async (req, res) => {
+const CLIPS_PATH: string = config.get("clips_path");
+
+const getVideoByID = async (req: Request, res: Response): Promise<void> => {
+
   const clipId = req.query.id;
   const state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
-  const clip = state.find((clip) => { return clip.id == clipId });
+  const clip: Clip = state.find((clip: Clip) => { return clip.id == clipId });
   const clipPath = path.join(CLIPS_PATH, clip.clipName);
 
   if (!fs.existsSync(clipPath)) {
@@ -24,15 +29,21 @@ export default useAuth(async (req, res) => {
     return;
   }
 
+  if (clip.requireAuth && !isAuthorized(req)) {
+    res.statusCode = 401;
+    res.end();
+    return;
+  }
+
   serveVideo(req, res, clipPath);
-});
+};
 
 /*
  * Serves a video using chunks
  *
  * Source: https://betterprogramming.pub/video-stream-with-node-js-and-html5-320b3191a6b6
  */
-function serveVideo(req, res, videoPath) {
+const serveVideo = (req: Request, res: Response, videoPath: string): void => {
   const stat = fs.statSync(videoPath);
   const fileSize = stat.size;
   const range = req.headers.range;
@@ -43,20 +54,22 @@ function serveVideo(req, res, videoPath) {
     const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
     const chunksize = end - start + 1;
     const file = fs.createReadStream(videoPath, { start, end });
-    const head = {
+    const head: NodeHeaders = {
       "Content-Range": `bytes ${start}-${end}/${fileSize}`,
       "Accept-Ranges": "bytes",
-      "Content-Length": chunksize,
-      "Content-Type": mime.lookup(videoPath),
+      "Content-Length": chunksize.toString(),
+      "Content-Type": mime.lookup(videoPath) ? mime.lookup(videoPath).toString() : undefined,
     };
     res.writeHead(206, head);
     file.pipe(res);
   } else {
-    const head = {
-      "Content-Length": fileSize,
-      "Content-Type": mime.lookup(videoPath),
+    const head: NodeHeaders = {
+      "Content-Length": fileSize.toString(),
+      "Content-Type": mime.lookup(videoPath) ? mime.lookup(videoPath).toString() : undefined,
     };
     res.writeHead(200, head);
     fs.createReadStream(videoPath).pipe(res);
   }
 }
+
+export default getVideoByID;

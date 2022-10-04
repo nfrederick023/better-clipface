@@ -2,13 +2,17 @@
  * Login page
  */
 
-import { useRouter } from "next/router";
-import { useEffect, useRef, useState } from "react";
-import styled from "styled-components";
-import config from "config";
-import { useCookies } from 'react-cookie';
-import ClipfaceLayout from "../components/ClipfaceLayout";
+import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
+import { ParsedUrl, parseUrl } from "next/dist/shared/lib/router/utils/parse-url";
+
+import { AuthResponse } from "../shared/interfaces";
+import ClipfaceLayout from "../components/Layout";
 import Container from "../components/Container";
+import { Redirect } from "next/types";
+import config from "config";
+import styled from "styled-components";
+import { useCookies } from "react-cookie";
+import { useRouter } from "next/router";
 
 const LoginBox = styled.div`
   margin: 0px auto;
@@ -26,29 +30,27 @@ const LoginButton = styled.button`
   height: 48px;
 `;
 
-const LoginPage = ({ authEnabled }) => {
+const LoginPage: FC = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [password, setPassword] = useState("");
-  const [cookies, setCookie] = useCookies(['authToken']);
-  const passwordFieldRef = useRef();
+  const [, setCookie] = useCookies(["authToken"]);
+  const passwordFieldRef = useRef() as MutableRefObject<HTMLInputElement>;
 
   useEffect(() => {
     passwordFieldRef.current.focus();
   });
 
-  const next = "next" in router.query ? router.query["next"] : "/";
+  const next: ParsedUrl = "next" in router.query ? parseUrl(router.query["next"] as string) : parseUrl("/");
 
-  const onPasswordChange = (e) => {
-    setPassword(e.target.value);
+  const onPasswordChange = (password: string): void => {
+    setPassword(password);
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = (e: { preventDefault: () => void; }): void => {
     e.preventDefault();
-
     setIsLoading(true);
-
     login(password)
       .then((res) => {
         if (res?.authToken) {
@@ -59,7 +61,7 @@ const LoginPage = ({ authEnabled }) => {
           setError("Invalid user name or password, please try again");
         }
       })
-      .catch((e) => {
+      .catch(() => {
         setIsLoading(false);
         setError("Login failed due to an unexpected error");
       });
@@ -94,7 +96,7 @@ const LoginPage = ({ authEnabled }) => {
                   autoComplete="current-password"
                   disabled={isLoading}
                   value={password}
-                  onChange={onPasswordChange}
+                  onChange={(event): void => onPasswordChange(event.target.value)}
                 />
 
                 {error && <p className="has-text-danger">{error}</p>}
@@ -115,7 +117,7 @@ const LoginPage = ({ authEnabled }) => {
           </Form>
         </LoginBox>
       </Container>
-    </ClipfaceLayout>
+    </ClipfaceLayout >
   );
 };
 
@@ -124,7 +126,8 @@ const LoginPage = ({ authEnabled }) => {
  *
  * @param {string} password
  */
-async function login(password) {
+async function login(password: string): Promise<AuthResponse | undefined> {
+
   const response = await fetch("/api/login", {
     method: "POST",
     cache: "no-cache",
@@ -139,20 +142,16 @@ async function login(password) {
   return undefined;
 }
 
-export async function getServerSideProps() {
+export const getServerSideProps = (): { redirect: Redirect } | { props: Record<string, never> } => {
   // If no user authentication is configured, forward to the index page
   if (!config.has("user_password")) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
+    const redirect: Redirect = {
+      destination: "/",
+      permanent: false,
     };
+    return { redirect };
   }
-
-  return {
-    props: {},
-  };
+  return { props: {} };
 }
 
 export default LoginPage;

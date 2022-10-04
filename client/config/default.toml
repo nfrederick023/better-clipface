@@ -4,9 +4,8 @@
 # Each option is documented in README.md
 #
 clips_path = "/clips"
-# user_password = 
+user_password = "test"
 secure_cookies = true
-# clips_page_title =
 header_title = "Snacksable"
 pagination = true
 page_title = "Snacksable"
