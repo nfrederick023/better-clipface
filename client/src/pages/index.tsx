@@ -5,7 +5,6 @@
 import { Clip, IndexPageProps, LinkTypes, SortTypes } from "../shared/interfaces";
 import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
 
-import ClipfaceLayout from "../components/Layout";
 import Container from "../components/Container";
 import CopyClipLink from "../components/CopyLink";
 import Pagination from "../components/Pagination";
@@ -18,7 +17,7 @@ import prettyBytes from "pretty-bytes";
 import requireAuth from "../backend/requireAuth";
 import styled from "styled-components";
 import { toNumber } from "lodash";
-import { useCookies } from "react-cookie";
+import { useCookies } from 'react-cookie';
 
 const ClearFilterButton = styled.span`
   cursor: pointer;
@@ -75,16 +74,16 @@ const IndexPage: FC<IndexPageProps> = ({ allClips, pagination, authStatus }) => 
   const [totalClipCount, setTotalClipCount] = useState(0)
   const [pageCount, setPageCount] = useState(0)
   const [cookies, setCookies] = useCookies(["clipsPerPage", "isDarkMode"]);
-  const [clipsPerPage, setClipsPerPage] = useState(toNumber(cookies.clipsPerPage) || 40)
   const [intialClipList, setIntialClipList] = useState(allClips)
   const filterBox = useRef() as MutableRefObject<HTMLInputElement>;
 
   // Focus filter box on load
   useEffect(() => {
     updatePage();
-  }, [sort, currentPage, filter, isAscending, intialClipList, clipsPerPage]);
+  }, [sort, currentPage, filter, isAscending, intialClipList, cookies]);
 
   const updatePage = (): void => {
+    const clipsPerPage = toNumber(cookies.clipsPerPage);
     let sortedClips;
 
     // get sorted clips list
@@ -161,7 +160,6 @@ const IndexPage: FC<IndexPageProps> = ({ allClips, pagination, authStatus }) => 
 
   const handleChangeClipsPerPage = (newClipsPerPage: number): void => {
     setCookies("clipsPerPage", newClipsPerPage < 1 ? 0 : newClipsPerPage, { path: "/" });
-    setClipsPerPage(newClipsPerPage < 1 ? 0 : newClipsPerPage)
   };
 
   const updateVideoList = (selectedClip: Clip): void => {
@@ -171,7 +169,6 @@ const IndexPage: FC<IndexPageProps> = ({ allClips, pagination, authStatus }) => 
   }
 
   return (
-    <ClipfaceLayout authStatus={authStatus} pageName='index'>
       <Container>
         <div className='field'>
           <label className='label'>Search</label>
@@ -198,7 +195,7 @@ const IndexPage: FC<IndexPageProps> = ({ allClips, pagination, authStatus }) => 
             currentPage={currentPage}
             totalPages={pageCount}
             totalClips={totalClipCount}
-            clipsPerPage={clipsPerPage}
+            clipsPerPage={toNumber(cookies.clipsPerPage)}
             onChangePage={(pageNumber): void => changePage(pageNumber)}
             onChangeClipsPerPage={handleChangeClipsPerPage}
             showLabel
@@ -281,13 +278,12 @@ const IndexPage: FC<IndexPageProps> = ({ allClips, pagination, authStatus }) => 
             currentPage={currentPage}
             totalPages={pageCount}
             totalClips={totalClipCount}
-            clipsPerPage={clipsPerPage}
+            clipsPerPage={toNumber(cookies.clipsPerPage)}
             onChangeClipsPerPage={handleChangeClipsPerPage}
             onChangePage={(newPageNumber): void => setCurrentPage(newPageNumber)}
           />
         )}
       </Container>
-    </ClipfaceLayout>
   );
 };
 

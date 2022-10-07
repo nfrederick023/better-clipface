@@ -4,6 +4,7 @@
 import { GetServerSideProps } from "next";
 import { IncomingMessage } from "http";
 import { ReactNode } from "react";
+import { Cookies } from "react-cookie";
 
 export interface Clip {
     clipName: string;
@@ -40,9 +41,7 @@ export enum SortTypes {
 }
 
 export interface LayoutProps {
-    children?: ReactNode,
-    authStatus?: AuthStatus,
-    pageName: string
+    children?: ReactNode
 }
 
 export interface CopyLinkProps {
@@ -93,7 +92,7 @@ export interface AuthStatus { authStatus?: string }
 
 export interface WatchPageProps {
     authStatus: AuthStatus,
-    selectedClip: Clip
+    selectedClip: Clip | undefined
 }
 
 export interface IndexPageProps {

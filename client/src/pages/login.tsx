@@ -35,7 +35,7 @@ const LoginPage: FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [password, setPassword] = useState("");
-  const [, setCookie] = useCookies(["authToken"]);
+  const [cookies, setCookie] = useCookies(["authToken"]);
   const passwordFieldRef = useRef() as MutableRefObject<HTMLInputElement>;
 
   useEffect(() => {
@@ -68,7 +68,6 @@ const LoginPage: FC = () => {
   };
 
   return (
-    <ClipfaceLayout pageName="login">
       <Container>
         <LoginBox className="box">
           <p className="has-text-centered has-text-weight-bold">
@@ -117,7 +116,6 @@ const LoginPage: FC = () => {
           </Form>
         </LoginBox>
       </Container>
-    </ClipfaceLayout >
   );
 };
 

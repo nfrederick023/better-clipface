@@ -5,22 +5,23 @@
 import { Clip, LinkTypes, WatchPageProps } from "../../shared/interfaces";
 import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
 import { NextPageContext, Redirect } from "next";
-
 import ClipfaceLayout from "../../components/Layout";
-import Container from "../../components/Container";
 import CopyClipLink from "../../components/CopyLink";
+import Container from "../../components/Container";
 import Head from "next/head";
 import ReactMarkdown from "react-markdown";
 import TimeAgo from "react-timeago";
 import config from "config";
-import fse from "fs-extra";
+import fse from 'fs-extra';
 import getConfig from "next/config";
+import getMeta from "../../backend/getMeta";
 import path from "path";
 import prettyBytes from "pretty-bytes";
 import requireAuth from "../../backend/requireAuth";
 import styled from "styled-components";
-import { useCookies } from "react-cookie";
+import { useCookies } from 'react-cookie';
 import { useRouter } from "next/router";
+import { booleanify } from "../../shared/functions";
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -95,15 +96,14 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
   const router = useRouter();
   const videoRef = useRef() as MutableRefObject<HTMLVideoElement>;
   const [cookies, setCookie] = useCookies(["theaterMode", "videoVolume"]);
-  const [theaterMode, setTheaterMode] = useState(cookies.theaterMode === "true");
-  const [videoVolume, setVideoVolume] = useState(parseFloat(cookies.videoVolume))
   const [clip, setClip] = useState(selectedClip);
   const [currentURL, setCurrentURL] = useState("");
   const [fullVideoURL, setFullVideoURL] = useState("");
-  const clipTitle = clip.name.split(".").slice(0, -1).join(".");
+  const clipTitle = clip?.name.split(".").slice(0, -1).join(".");
 
   // The video volume can't be set directly on the element for some reason, so
   // we set it immediately after rendering
+
   useEffect(() => {
     const url = new URL(window.location.href)
     setCurrentURL(window.location.href);
@@ -111,7 +111,9 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
     if (clip) {
       document.title = clipTitle + " - " + publicRuntimeConfig.pageTitle;
     }
-    videoRef.current.volume = videoVolume
+    if(videoRef.current){
+      videoRef.current.volume = parseFloat(cookies.videoVolume);
+    }
   }, [clip]);
 
 
@@ -136,12 +138,10 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
       volume = videoRef.current.volume;
     }
     setCookie("videoVolume", volume, { path: "/" });
-    setVideoVolume(volume)
   };
 
   const toggleTheaterMode = (): void => {
-    setCookie("theaterMode", !theaterMode, { path: "/" });
-    setTheaterMode(!theaterMode);
+    setCookie("theaterMode", !booleanify(cookies.theaterMode), { path: "/" });
   };
 
   const videoProps = {
@@ -176,7 +176,7 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
           <meta property="og:video:height" content="720" />
         </Head >
       </>
-      <ClipfaceLayout authStatus={authStatus} pageName="watch">
+
         <Container>
           <ButtonRow>
             {/* Only show "Back to clips" button to authenticated users */}
@@ -197,7 +197,7 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
             )}
 
             <button
-              className={"button is-small " + (theaterMode ? "is-info" : "")}
+              className={"button is-small " + (booleanify(cookies.theaterMode) ? "is-info" : "")}
               onClick={toggleTheaterMode}
             >
               <span className="icon is-small">
@@ -222,11 +222,11 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
         </Container>
 
         <>
-          <VideoContainer className={theaterMode ? "theater-mode" : ""} noPadding={false}>
+          <VideoContainer className={booleanify(cookies.theaterMode) ? "theater-mode" : ""} noPadding={false}>
             <video {...videoProps}><div> lalalalala</div> </video>
           </VideoContainer>
 
-          {theaterMode && <VideoSpacer />}
+          {booleanify(cookies.theaterMode) && <VideoSpacer />}
         </>
 
         <Container>
@@ -249,7 +249,6 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
             )}
           </VideoInfo>
         </Container>
-      </ClipfaceLayout>
     </>
   );
 };
@@ -260,16 +259,13 @@ export const getServerSideProps = requireAuth(async (ctx: NextPageContext) => {
   const clipId: string = ctx.query.id as string;
   const state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
   const selectedClip = state.find((clip: Clip) => { return clip.id == clipId });
-
-  if (selectedClip?.requireAuth) {
-    const redirect: Redirect = {
-      destination: "/login?next=" + encodeURIComponent(ctx?.req?.url ? ctx?.req?.url : ""),
-      permanent: false,
-    }
-    return { redirect };
+  if(selectedClip){
+    return {
+      props: { selectedClip },
+    };
   }
   return {
-    props: { selectedClip },
+    props: {},
   };
 });
 

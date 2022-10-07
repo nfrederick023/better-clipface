@@ -81,6 +81,7 @@
     "require-yield": "error",
     "use-isnan": "error",
     "valid-typeof": "error",
+    "no-var": "error",
     "quotes": [
       "error",
       "double"

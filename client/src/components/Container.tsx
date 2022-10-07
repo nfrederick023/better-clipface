@@ -1,9 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-/*
- * Adds left and right margin to maintain a minimum size
- */
-
 import styled from "styled-components";
 
 const width = 1344;

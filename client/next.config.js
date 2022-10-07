@@ -1,13 +1,11 @@
-const config = require("config");
+import config from "config";
 
-module.exports = {
-    publicRuntimeConfig: {
-        // Will be available on both server and client
-        headerTitle: config.get("header_title"),
-        pageTitle: config.get("page_title"),
-    },
-    compiler: {
-        // ssr and displayName are configured by default
-        styledComponents: true,
-    },
-}
+export const publicRuntimeConfig = {
+    // Will be available on both server and client
+    headerTitle: config.get("header_title"),
+    pageTitle: config.get("page_title"),
+};
+export const compiler = {
+    // ssr and displayName are configured by default
+    styledComponents: true,
+};

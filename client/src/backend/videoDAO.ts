@@ -1,9 +1,3 @@
-/*
- * Lists all clips
- *
- * This module should only be imported from server side code.
- */
-
 import { Clip } from "../shared/interfaces";
 import config from "config";
 import fse from "fs-extra";

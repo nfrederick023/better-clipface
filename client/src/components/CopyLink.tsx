@@ -1,10 +1,7 @@
-/*
- * Reusable button component for copying clip link
- */
-
-import { Clip, CopyLinkProps, LinkTypes } from "../shared/interfaces";
 import { FC, useEffect, useState } from "react";
 
+import { Clip, CopyLinkProps, LinkTypes } from "../shared/interfaces";
+import PropTypes from "prop-types";
 import Tippy from "@tippyjs/react";
 import styled from "styled-components";
 import updateClip from "../videoAPI";
@@ -82,7 +79,8 @@ const CopyLink: FC<CopyLinkProps> = ({ updateVideoList, clip, noText = false, li
   }
 
   const onClick = async (): Promise<void> => {
-    const clipURL = clip.id;
+    const clipID = clip.id;
+    const baseURL = window.location.origin;
 
     // If we're making a public link, we need to append a single clip
     // authentication token
@@ -98,7 +96,8 @@ const CopyLink: FC<CopyLinkProps> = ({ updateVideoList, clip, noText = false, li
 
     if (linkType == LinkTypes.copyLink) {
       try {
-        await navigator.clipboard.writeText(clipURL);
+        console.log(baseURL + '/watch/' + clipID)
+        await navigator.clipboard.writeText(baseURL + '/watch/' + clipID);
         setLinkCopied(true);
       } catch (e) {
         alert("Failed to copy link!");

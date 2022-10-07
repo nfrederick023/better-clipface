@@ -13,6 +13,7 @@ import { ReactElement } from "react";
 import { Request } from "express";
 import { createGlobalStyle } from "styled-components";
 import getConfig from "next/config";
+import ClipfaceLayout from "../components/Layout";
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -61,7 +62,9 @@ const MyApp: NextPage<MyAppProps> = ({ Component, pageProps, allCookies }: MyApp
       <title>{publicRuntimeConfig.pageTitle}</title>
       <GlobalStyle />
       <CookiesProvider cookies={cookies}>
+      <ClipfaceLayout>
         <Component {...pageProps} />
+      </ClipfaceLayout>
       </CookiesProvider>
     </>
   );

@@ -19,7 +19,6 @@ import isAuthorized from "./auth";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function (fn: any) {
   return async (ctx: NextPageContext): Promise<{ props: PropsWithAuth } | { redirect: Redirect }> => {
-
     const urlToRedirect = ctx.req?.url ? "/login?next=" + encodeURIComponent(ctx.req.url ? ctx.req.url : "") : "/login";
     const redirect: Redirect = {
       destination: urlToRedirect,
@@ -29,7 +28,7 @@ export default function (fn: any) {
 
     const authenticated = await isAuthorized(ctx.req as Request);
 
-    if (!authenticated && ctx.req?.url != "/login" && !ctx.req?.url?.includes("/watch")) {
+    if (!authenticated && ctx.req?.url != "/login") {
       return { redirect };
     }
 

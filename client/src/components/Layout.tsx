@@ -1,9 +1,4 @@
-/*
- * The base layout of the application
- */
-
-import { FC, useState } from "react";
-
+import { FC, useEffect, useState } from "react";
 import Container from "./Container";
 import { Helmet } from "react-helmet";
 import { LayoutProps } from "../shared/interfaces";
@@ -12,6 +7,7 @@ import getConfig from "next/config";
 import styled from "styled-components";
 import { useCookies } from "react-cookie";
 import { useRouter } from "next/router";
+import { booleanify } from "../shared/functions";
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -82,31 +78,22 @@ const HeaderTitle = styled.h1`
   font-size: 1.5rem;
 `;
 
-const ClipfaceLayout: FC<LayoutProps> = ({ children, authStatus = { status: "NOT_AUTHENTICATED" }, pageName }) => {
-
+const ClipfaceLayout: FC<LayoutProps> = ({children}) => {
   const router = useRouter();
-  const contentClassName = pageName ? `page-${pageName}` : "";
-  const [cookies, setCookies] = useCookies(["isDarkMode"]);
-  const [isDarkMode, setIsDarkMode] = useState(cookies.isDarkMode === "true");
+  const [cookies, setCookies] = useCookies(['isDarkMode', 'authToken']);
 
   const onSignOut = (): void => {
-    logout().then((ok) => {
-      if (ok) {
-        router.push("/login");
-      } else {
-        alert("Failed to log out!");
-      }
-    });
+    setCookies("authToken", '', { path: "/" });
+    router.push("/login");
   };
 
   const toggleDarkMode = (): void => {
-    setCookies("isDarkMode", !isDarkMode, { path: "/" });
-    setIsDarkMode(!isDarkMode)
+    setCookies("isDarkMode", !booleanify(cookies.isDarkMode), { path: "/" });
   }
 
   return (
     <>
-      {isDarkMode ? (
+      {booleanify(cookies.isDarkMode) ? (
         <Helmet>
           <link rel="stylesheet"
             href="https://unpkg.com/bulma-dark-variant@0.1.2/css/bulma-prefers-dark.css"
@@ -130,9 +117,9 @@ const ClipfaceLayout: FC<LayoutProps> = ({ children, authStatus = { status: "NOT
               <NavbarMenu>
                 <Toggle
                   icons={false}
-                  checked={isDarkMode}
+                  checked={booleanify(cookies.isDarkMode)}
                   onChange={toggleDarkMode} />
-                {authStatus == "AUTHENTICATED" && (
+                {cookies.authToken && (
                   <a onClick={onSignOut}>
                     Log out
                   </a>
@@ -143,7 +130,7 @@ const ClipfaceLayout: FC<LayoutProps> = ({ children, authStatus = { status: "NOT
         </Header>
       </section>
 
-      <ApplicationDiv className={contentClassName}>
+      <ApplicationDiv>
         {children}
       </ApplicationDiv>
 
@@ -155,19 +142,5 @@ const ClipfaceLayout: FC<LayoutProps> = ({ children, authStatus = { status: "NOT
     </>
   );
 }
-
-/**
- * Logs out through the API
- */
-async function logout(): Promise<boolean> {
-  const response = await fetch("/api/logout", { method: "POST" });
-
-  if (response.ok) {
-    return true;
-  }
-
-  return false;
-}
-
 
 export default ClipfaceLayout;

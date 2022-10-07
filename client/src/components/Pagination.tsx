@@ -1,11 +1,8 @@
-/*
- * Pagination component for the clip list page
- */
-
 import { FC, useEffect, useState } from "react";
 
 import { PaginationProps } from "../shared/interfaces";
 import Popup from "reactjs-popup";
+import PropTypes from "prop-types";
 import range from "lodash/range";
 import styled from "styled-components";
 
@@ -83,7 +80,7 @@ const Pagination: FC<PaginationProps> = ({ totalPages, currentPage, clipsPerPage
             ))}
 
             <li suppressHydrationWarning={true}>
-              {typeof window === "undefined" && <Popup
+              {process.browser && <Popup // deprecated but I can't be bothered to fix this
                 trigger={
                   <SubmenuButton >
                     <span className="icon">

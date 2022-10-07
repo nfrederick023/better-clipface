@@ -4,6 +4,7 @@
   "author": "Tomas Sandven",
   "license": "MIT",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next",
     "build": "next build",
