@@ -8,7 +8,6 @@ import Container from "./Container";
 import { Helmet } from "react-helmet";
 import { LayoutProps } from "../shared/interfaces";
 import Toggle from "react-toggle";
-import { boolean } from "boolean";
 import getConfig from "next/config";
 import styled from "styled-components";
 import { useCookies } from "react-cookie";
@@ -22,7 +21,7 @@ const Header = styled.header`
   background-repeat: no-repeat;
 `;
 
-const NavbarContainer = styled(Container)`
+const NavbarContainer = styled(Container as any)`
   min-height: 3.25rem;
   display: flex;
   align-items: center;
@@ -88,7 +87,7 @@ const ClipfaceLayout: FC<LayoutProps> = ({ children, authStatus = { status: "NOT
   const router = useRouter();
   const contentClassName = pageName ? `page-${pageName}` : "";
   const [cookies, setCookies] = useCookies(["isDarkMode"]);
-  const [isDarkMode, setIsDarkMode] = useState(boolean(cookies.isDarkMode));
+  const [isDarkMode, setIsDarkMode] = useState(cookies.isDarkMode === "true");
 
   const onSignOut = (): void => {
     logout().then((ok) => {
