@@ -1,12 +1,9 @@
-/*
- * Pagination component for the clip list page
- */
-
 import { useEffect, useState } from "react";
-import PropTypes from "prop-types";
-import styled from "styled-components";
-import range from "lodash/range";
+
 import Popup from "reactjs-popup";
+import PropTypes from "prop-types";
+import range from "lodash/range";
+import styled from "styled-components";
 
 const PaginationBar = styled.div`
   margin: 10px 0px;

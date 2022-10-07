@@ -2,22 +2,25 @@
  * Watch page - this is where the video is displayed
  */
 
-import { useRouter } from "next/router";
-import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
-import styled from "styled-components";
-import TimeAgo from "react-timeago";
-import prettyBytes from "pretty-bytes";
-import ReactMarkdown from "react-markdown";
-import getConfig from "next/config";
-import { useCookies } from 'react-cookie';
+
 import ClipfaceLayout from "../../components/ClipfaceLayout";
-import CopyClipLink from "../../components/CopyClipLink";
-import requireAuth from "../../backend/requireAuth";
 import Container from "../../components/Container";
-import path from "path";
-import config from "config";
+import CopyClipLink from "../../components/CopyClipLink";
+import Head from "next/head";
+import ReactMarkdown from "react-markdown";
+import TimeAgo from "react-timeago";
 import booleanify from "booleanify";
+import config from "config";
+import fse from 'fs-extra';
+import getConfig from "next/config";
+import getMeta from "../../backend/getMeta";
+import path from "path";
+import prettyBytes from "pretty-bytes";
+import requireAuth from "../../backend/requireAuth";
+import styled from "styled-components";
+import { useCookies } from 'react-cookie';
+import { useRouter } from "next/router";
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -254,8 +257,6 @@ const WatchPage = ({ clipMeta, authInfo, video }) => {
 };
 
 export const getServerSideProps = requireAuth(async ({ query, req }) => {
-  const getMeta = require("../../backend/getMeta").default;
-  const fse = require('fs-extra');
   const CLIPS_PATH = config.get("clips_path");
 
   const state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));

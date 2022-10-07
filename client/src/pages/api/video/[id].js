@@ -2,14 +2,14 @@
  * API route for downloading clips by name
  */
 
-import fs from "fs";
-import path from "path";
-import config from "config";
 import * as mime from "mime-types";
 
+import config from "config";
+import fs from "fs";
+import fse from 'fs-extra';
+import path from "path";
 import { useAuth } from "../../../backend/auth";
 
-const fse = require('fs-extra');
 const CLIPS_PATH = config.get("clips_path");
 
 export default useAuth(async (req, res) => {

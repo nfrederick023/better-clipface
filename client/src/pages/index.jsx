@@ -3,19 +3,23 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import Router from "next/router";
-import styled from "styled-components";
-import TimeAgo from "react-timeago";
-import prettyBytes from "pretty-bytes";
-import debounce from "lodash/debounce";
-import { useCookies } from 'react-cookie';
-import Pagination from "../components/Pagination";
+
 import ClipfaceLayout from "../components/ClipfaceLayout";
-import CopyClipLink from "../components/CopyClipLink";
-import requireAuth from "../backend/requireAuth";
 import Container from "../components/Container";
+import CopyClipLink from "../components/CopyClipLink";
+import Pagination from "../components/Pagination";
+import Router from "next/router";
+import TimeAgo from "react-timeago";
 import booleanify from "booleanify";
+import { checkAuth } from "../backend/auth";
+import config from "config";
+import debounce from "lodash/debounce";
+import listClips from "../backend/listClips";
+import prettyBytes from "pretty-bytes";
+import requireAuth from "../backend/requireAuth";
+import styled from "styled-components";
 import { toNumber } from "lodash";
+import { useCookies } from 'react-cookie';
 
 const ClearFilterButton = styled.span`
   cursor: pointer;
@@ -292,12 +296,9 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
 export const getServerSideProps = requireAuth(async (context) => {
   let videoList = [];
 
-  const config = require("config");
 
-  const { checkAuth } = require("../backend/auth");
 
   if (await checkAuth(context.req)) {
-    const listClips = require("../backend/listClips").default;
 
     videoList = await listClips();
   }

@@ -1,16 +1,12 @@
-/*
- * The base layout of the application
- */
-
-import { useState } from "react";
-import { useRouter } from "next/router";
+import Container from "./Container";
 import { Helmet } from "react-helmet";
 import Toggle from "react-toggle";
-import styled from "styled-components";
-import getConfig from "next/config";
-import Container from "./Container";
-import { useCookies } from 'react-cookie';
 import booleanify from 'booleanify';
+import getConfig from "next/config";
+import styled from "styled-components";
+import { useCookies } from 'react-cookie';
+import { useRouter } from "next/router";
+import { useState } from "react";
 
 const { publicRuntimeConfig } = getConfig();
 

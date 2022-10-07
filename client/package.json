@@ -4,6 +4,13 @@
   "author": "Tomas Sandven",
   "license": "MIT",
   "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next",
+    "build": "next build",
+    "start": "next start",
+    "gensalt": "node -e \"const bcrypt = require('bcrypt'); console.log(bcrypt.genSaltSync())\""
+  },
   "dependencies": {
     "@tippyjs/react": "^4.2.0",
     "bcrypt": "^5.0.0",
@@ -28,12 +35,6 @@
     "styled-components": "^5.1.1",
     "tippy.js": "^6.2.7",
     "toml": "^3.0.0"
-  },
-  "scripts": {
-    "dev": "next",
-    "build": "next build",
-    "start": "next start",
-    "gensalt": "node -e \"const bcrypt = require('bcrypt'); console.log(bcrypt.genSaltSync())\""
   },
   "devDependencies": {
     "prettier": "^2.3.2",

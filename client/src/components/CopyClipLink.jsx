@@ -1,14 +1,9 @@
-/*
- * Reusable button component for copying clip link
- */
+import { useEffect, useState } from "react";
 
 import PropTypes from "prop-types";
 import Tippy from "@tippyjs/react";
-
-import { useEffect, useState } from "react";
-import updateClip from "../videoAPI";
 import styled from "styled-components";
-
+import updateClip from "../videoAPI";
 
 const CopyTextContainer = styled.span`
  .favorite {

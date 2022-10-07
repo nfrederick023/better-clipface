@@ -3,9 +3,10 @@
  *
  * This module should only be imported from server side code.
  */
-import path from "path";
+
 import config from "config";
-const fse = require('fs-extra');
+import fse from 'fs-extra';
+import path from "path";
 
 const CLIPS_PATH = config.get("clips_path");
 

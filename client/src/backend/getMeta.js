@@ -2,12 +2,13 @@
  * Exports a function for fetching clip metadata
  */
 
-import fs from "fs";
-import path from "path";
-import config from "config";
 import * as mime from "mime-types";
 
-const fse = require('fs-extra');
+import config from "config";
+import fs from "fs";
+import fse from 'fs-extra';
+import path from "path";
+
 const CLIPS_PATH = config.get("clips_path");
 
 /**

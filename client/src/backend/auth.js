@@ -5,10 +5,11 @@
  */
 
 import bcrypt from "bcrypt";
-import cookie from "cookie";
-import path from "path";
 import config from "config";
-const fse = require('fs-extra');
+import cookie from "cookie";
+import fse from 'fs-extra';
+import path from "path";
+
 const CLIPS_PATH = config.get("clips_path");
 /**
  * Middleware for handling authentication
