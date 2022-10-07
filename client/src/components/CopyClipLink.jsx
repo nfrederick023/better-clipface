@@ -85,7 +85,8 @@ export default function CopyClipLink(props) {
   }
 
   const onClick = async (e) => {
-    var clipURL = clip.id;
+    const clipID = clip.id;
+    const baseURL = window.location.origin;
 
     // If we're making a public link, we need to append a single clip
     // authentication token
@@ -101,7 +102,8 @@ export default function CopyClipLink(props) {
 
     if (copyLink) {
       try {
-        await navigator.clipboard.writeText(clipURL.href);
+        console.log(baseURL + '/watch/' + clipID)
+        await navigator.clipboard.writeText(baseURL + '/watch/' + clipID);
         setLinkCopied(true);
       } catch (e) {
         console.error(e);

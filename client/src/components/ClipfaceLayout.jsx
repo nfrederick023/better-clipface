@@ -84,7 +84,6 @@ const ClipfaceLayout = ({ children, authInfo = { status: "NOT_AUTHENTICATED" }, 
   const contentClassName = pageName ? `page-${pageName}` : "";
   const [cookies, setCookies] = useCookies(['isDarkMode']);
   const [isDarkMode, setIsDarkMode] = useState(booleanify(cookies.isDarkMode));
-
   const onSignOut = () => {
     logout().then((ok) => {
       if (ok) {

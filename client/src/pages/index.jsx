@@ -83,7 +83,7 @@ const IndexPage = ({ videoList, title, pagination, authInfo }) => {
   // Focus filter box on load
   useEffect(() => {
     updatePage();
-  }, [sort, currentPage, filter, isAscending, videos]);
+  }, [sort, currentPage, filter, isAscending, videos, clipsPerPage]);
 
   const updatePage = () => {
     let clipsList;
