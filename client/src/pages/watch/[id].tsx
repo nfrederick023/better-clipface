@@ -16,6 +16,7 @@ import config from "config";
 import fse from "fs-extra";
 import getConfig from "next/config";
 import { getState } from "../../services/state";
+import isAuthorized from "../../services/auth";
 import path from "path";
 import prettyBytes from "pretty-bytes";
 import requireAuth from "../../services/requireAuth";
@@ -178,7 +179,7 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
       <Container>
         <ButtonRow>
           {/* Only show "Back to clips" button to authenticated users */}
-          {authStatus === AuthStatus.authenticated && (
+          {authStatus && (
             <BackLink onClick={handleBackClick}>
               <span className="icon">
                 <i className="fas fa-arrow-alt-circle-left"></i>
@@ -187,7 +188,7 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
             </BackLink>
           )}
 
-          {authStatus === AuthStatus.notAuthenticated && (
+          {!authStatus && (
             <SingleClipAuthNotice>
               <InlineIcon className="fas fa-info-circle" />
               You are using a public link for this clip
@@ -204,7 +205,7 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
             <span>Theater mode</span>
           </button>
           {/* Only show link copying buttons to authenticated users */}
-          {authStatus === AuthStatus.authenticated && (
+          {authStatus && (
             <>
               <CopyClipLink clip={clip} noText={true} linkType={LinkTypes.copyLink} />
               {clip.requireAuth ? <CopyClipLink clip={clip} noText={true} updateVideoList={setClip} linkType={LinkTypes.privateLink} /> :
@@ -251,20 +252,32 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
   );
 };
 
-export const getServerSideProps = requireAuth(async (ctx: NextPageContext) => {
-  const CLIPS_PATH: string = config.get("clips_path");
+const getProps = (selectedClip: Video) => {
+  return {
+    props: { selectedClip },
+  };
+}
+
+export const getServerSideProps = async (ctx: NextPageContext) => {
 
   const clipId: string = ctx.query.id as string;
   const state = await getState();
   const selectedClip = state.find((clip: Video) => { return clip.id === clipId; });
-  if (selectedClip) {
+  if (!selectedClip)
     return {
-      props: { selectedClip },
+      props: {},
     };
+
+  if (selectedClip.requireAuth) {
+    return requireAuth(getProps(selectedClip));
   }
-  return {
-    props: {},
-  };
-});
+  else {
+    const props = getProps(selectedClip);
+    //@ts-ignore
+    props.props.authStatus = await isAuthorized(ctx.req as Request);
+    return props;
+  }
+
+};
 
 export default WatchPage;
