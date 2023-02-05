@@ -1,6 +1,6 @@
+import { CopyLinkProps, LinkTypes, Video } from "../constants/interfaces";
 import { FC, useEffect, useState } from "react";
 
-import { CopyLinkProps, LinkTypes, Video } from "../constants/interfaces";
 import Tippy from "@tippyjs/react";
 import styled from "styled-components";
 import updateClip from "../constants/api/video";
@@ -13,7 +13,6 @@ const CopyTextContainer = styled.span`
    width: 80px;
  }
 `;
-
 
 const CopyLink: FC<CopyLinkProps> = ({ updateVideoList, clip, noText = false, linkType }) => {
   const [linkCopied, setLinkCopied] = useState(false);
