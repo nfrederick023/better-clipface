@@ -113,7 +113,11 @@ const IndexPage: FC<IndexPageProps> = ({ allClips, authStatus }) => {
       setPageCount(1);
     }
 
-    if (currentPage === -1 && (pageCount - 1 > 0 && sortedClips.length)) {
+    if (currentPage === -1 && pageCount - 1 > 0) {
+      setCurrentPage(0);
+    }
+
+    if (currentPage === -1 && sortedClips.length) {
       setCurrentPage(0);
     }
 
