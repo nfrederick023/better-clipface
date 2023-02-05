@@ -25,7 +25,8 @@ export default function (fn: any) {
 
     const authenticated = await isAuthorized(ctx.req as Request);
 
-    if (!authenticated && ctx.req?.url !== "/login") {
+    //@ts-ignore
+    if (!authenticated && ctx.req?.url !== "/login" && props.props?.selectedClip?.requireAuth) {
       return { redirect };
     }
 
