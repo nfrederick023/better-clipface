@@ -23,7 +23,7 @@ const isAuthorized = async (req: Request): Promise<boolean> => {
   }
 
   return !!(req.cookies?.authToken && (await checkHashedPassword("default", req.cookies?.authToken)));
-}
+};
 
 /**
  * Checks if a hashed password is valid
@@ -34,14 +34,14 @@ const isAuthorized = async (req: Request): Promise<boolean> => {
  * @returns {Promise<(object|null)>} Resulting hash, or null if login failed
  */
 export const checkHashedPassword = async (user: string, hashedPassword: string): Promise<boolean> => {
-  if (user != "default") {
+  if (user !== "default") {
     //throw "Logging in as non-default user is not yet supported";
   }
 
   const userPassword: string = config.get("user_password");
 
   return !!(await bcrypt.compare(userPassword, hashedPassword));
-}
+};
 
 /**
  * Hashes a password using bcrypt
@@ -54,6 +54,6 @@ export const hashPassword = async (password: string): Promise<string> => {
   const salt = await bcrypt.genSalt();
 
   return await bcrypt.hash(password, salt);
-}
+};
 
 export default isAuthorized;

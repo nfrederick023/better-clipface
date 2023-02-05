@@ -4,28 +4,26 @@
   "env": {
     "browser": true
   },
-  "parserOptions": {
-    "project": "./client/tsconfig.json",
-    "sourceType": "module"
-  },
   "plugins": [
-    "@typescript-eslint/eslint-plugin"
+    "@typescript-eslint/eslint-plugin",
+    "@next/eslint-plugin-next",
+    "sort-imports-es6-autofix"
   ],
   "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended"
   ],
   "rules": {
-    "sort-imports": "error",
-    "no-console": "error",
+    "eqeqeq": "error",
     "@typescript-eslint/explicit-function-return-type": "error",
+    "@typescript-eslint/no-empty-function": "warn",
     "constructor-super": "error",
     "for-direction": "error",
     "getter-return": "error",
     "no-async-promise-executor": "error",
     "no-case-declarations": "error",
     "no-class-assign": "error",
+    "no-console": "warn",
     "no-compare-neg-zero": "error",
     "no-cond-assign": "error",
     "no-const-assign": "error",
@@ -66,25 +64,40 @@
     "no-shadow-restricted-names": "error",
     "no-sparse-arrays": "error",
     "no-this-before-super": "error",
-    "no-undef": "error",
     "no-unexpected-multiline": "error",
     "no-unreachable": "error",
     "no-unsafe-finally": "error",
     "no-unsafe-negation": "error",
     "no-unsafe-optional-chaining": "error",
     "no-unused-labels": "error",
-    "no-unused-vars": "error",
     "no-useless-backreference": "error",
     "no-useless-catch": "error",
     "no-useless-escape": "error",
     "no-with": "error",
+    "semi": [
+      "error",
+      "always"
+    ],
     "require-yield": "error",
     "use-isnan": "error",
     "valid-typeof": "error",
     "no-var": "error",
     "quotes": [
       "error",
-      "double"
+      "single"
+    ],
+    "sort-imports-es6-autofix/sort-imports-es6": [
+      2,
+      {
+        "ignoreCase": false,
+        "ignoreMemberSort": false,
+        "memberSyntaxSortOrder": [
+          "none",
+          "all",
+          "multiple",
+          "single"
+        ]
+      }
     ]
   }
 }

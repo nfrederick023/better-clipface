@@ -6,12 +6,12 @@ import * as mime from "mime-types";
 
 import { Request, Response } from "express";
 
-import { Clip } from "../../../shared/interfaces";
 import { NodeHeaders } from "next/dist/server/web/types";
+import { Video } from "../../../constants/interfaces";
 import config from "config";
 import fs from "fs";
-import fse from "fs-extra";
-import isAuthorized from "../../../backend/auth";
+import { getState } from "../../../services/state";
+import isAuthorized from "../../../services/auth";
 import path from "path";
 
 const CLIPS_PATH: string = config.get("clips_path");
@@ -19,23 +19,28 @@ const CLIPS_PATH: string = config.get("clips_path");
 const getVideoByID = async (req: Request, res: Response): Promise<void> => {
 
   const clipId = req.query.id;
-  const state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
-  const clip: Clip = state.find((clip: Clip) => { return clip.id == clipId });
-  const clipPath = path.join(CLIPS_PATH, clip.clipName);
+  const state = await await getState();
+  const video: Video | undefined = state.find((clip: Video) => { return clip.id === clipId; });
+  if (video) {
+    const clipPath = path.join(CLIPS_PATH, video.name);
 
-  if (!fs.existsSync(clipPath)) {
-    res.statusCode = 404;
-    res.end();
-    return;
+    if (!fs.existsSync(clipPath)) {
+      res.statusCode = 404;
+      res.end();
+      return;
+    }
+
+    if (video.requireAuth && !isAuthorized(req)) {
+      res.statusCode = 401;
+      res.end();
+      return;
+    }
+
+    serveVideo(req, res, clipPath);
+
   }
 
-  if (clip.requireAuth && !isAuthorized(req)) {
-    res.statusCode = 401;
-    res.end();
-    return;
-  }
 
-  serveVideo(req, res, clipPath);
 };
 
 /*
@@ -70,6 +75,6 @@ const serveVideo = (req: Request, res: Response, videoPath: string): void => {
     res.writeHead(200, head);
     fs.createReadStream(videoPath).pipe(res);
   }
-}
+};
 
 export default getVideoByID;

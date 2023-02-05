@@ -8,12 +8,12 @@ import { Cookies, CookiesProvider } from "react-cookie";
 import { NextPage, NextPageContext } from "next";
 
 import { AppContext } from "next/app";
-import { MyAppProps } from "../shared/interfaces";
+import { MyAppProps } from "../constants/interfaces";
 import { ReactElement } from "react";
 import { Request } from "express";
 import { createGlobalStyle } from "styled-components";
-import getConfig from "next/config";
 import ClipfaceLayout from "../components/Layout";
+import getConfig from "next/config";
 
 const { publicRuntimeConfig } = getConfig();
 

@@ -4,12 +4,12 @@
 
 import { Request, Response } from "express";
 
+import { hashPassword } from "../../services/auth";
 import config from "config";
-import { hashPassword } from "../../backend/auth";
 
 const login = async (req: Request, res: Response): Promise<undefined> => {
   // Only POST is allowed on this route
-  if (req.method != "POST") {
+  if (req.method !== "POST") {
     res.statusCode = 405;
     res.end();
     return;
@@ -23,7 +23,7 @@ const login = async (req: Request, res: Response): Promise<undefined> => {
   const userPassword: string = config.get("user_password");
 
   if (req.body && "password" in req.body) {
-    if (userPassword == req.body["password"]) {
+    if (userPassword === req.body["password"]) {
 
       const hashedPassword = await hashPassword(userPassword);
       res.statusCode = 200;
@@ -36,6 +36,6 @@ const login = async (req: Request, res: Response): Promise<undefined> => {
   res.statusCode = 400;
   res.end("Invalid password\n");
   return;
-}
+};
 
 export default login;

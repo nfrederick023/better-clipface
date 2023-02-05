@@ -5,14 +5,13 @@
 import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
 import { ParsedUrl, parseUrl } from "next/dist/shared/lib/router/utils/parse-url";
 
-import { AuthResponse } from "../shared/interfaces";
-import ClipfaceLayout from "../components/Layout";
-import Container from "../components/Container";
+import { AuthResponse } from "../constants/interfaces";
 import { Redirect } from "next/types";
-import config from "config";
-import styled from "styled-components";
 import { useCookies } from "react-cookie";
 import { useRouter } from "next/router";
+import Container from "../components/Container";
+import config from "config";
+import styled from "styled-components";
 
 const LoginBox = styled.div`
   margin: 0px auto;
@@ -54,6 +53,7 @@ const LoginPage: FC = () => {
     login(password)
       .then((res) => {
         if (res?.authToken) {
+          cookies.authToken;
           setCookie("authToken", res.authToken, { path: "/" });
           router.push(next);
         } else {
@@ -124,7 +124,7 @@ const LoginPage: FC = () => {
  *
  * @param {string} password
  */
-async function login(password: string): Promise<AuthResponse | undefined> {
+ export const login = async(password: string): Promise<AuthResponse | undefined> => {
 
   const response = await fetch("/api/login", {
     method: "POST",
@@ -138,7 +138,7 @@ async function login(password: string): Promise<AuthResponse | undefined> {
   }
 
   return undefined;
-}
+};
 
 export const getServerSideProps = (): { redirect: Redirect } | { props: Record<string, never> } => {
   // If no user authentication is configured, forward to the index page
@@ -150,6 +150,6 @@ export const getServerSideProps = (): { redirect: Redirect } | { props: Record<s
     return { redirect };
   }
   return { props: {} };
-}
+};
 
 export default LoginPage;

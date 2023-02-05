@@ -1,8 +1,6 @@
-import { FC, useEffect, useState } from "react";
+import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 
-import { PaginationProps } from "../shared/interfaces";
 import Popup from "reactjs-popup";
-import PropTypes from "prop-types";
 import range from "lodash/range";
 import styled from "styled-components";
 
@@ -27,22 +25,35 @@ const ClickableTag = styled.span`
   cursor: pointer;
 `;
 
-const Pagination: FC<PaginationProps> = ({ totalPages, currentPage, clipsPerPage, onChangePage, onChangeClipsPerPage, showLabel }) => {
+export interface PaginationProps {
+  totalPages: number,
+  currentPage: number,
+  clipsPerPage: number,
+  showFavoritesButton: boolean,
+  isOnlyFavorites?: boolean,
+  totalClips: number,
+  showLabel: boolean,
+  onChangePage: (newPageNumber: number) => void,
+  setIsOnlyFavorite?: Dispatch<SetStateAction<boolean>>,
+  onChangeClipsPerPage: (newClipsPerPage: number) => void
+}
+
+const Pagination: FC<PaginationProps> = ({ totalPages, currentPage, showFavoritesButton, isOnlyFavorites, clipsPerPage, setIsOnlyFavorite, onChangePage, onChangeClipsPerPage, showLabel }) => {
 
   const [clipsPerPageDisplay, setclipsPerPageDisplay] = useState(clipsPerPage);
   let showAsModal = false;
 
   useEffect(() => {
     if (!clipsPerPage) {
-      setclipsPerPageDisplay("");
+      setclipsPerPageDisplay(0);
     } else {
       setclipsPerPageDisplay(clipsPerPage);
     }
     showAsModal = window.innerWidth < 768;
   }, [clipsPerPage]);
 
-  const onFirstPage = currentPage == 0;
-  const onLastPage = currentPage == totalPages - 1;
+  const onFirstPage = currentPage === 0;
+  const onLastPage = currentPage === totalPages - 1;
 
   const changeClipsPerPage = (newNumber: number): void => {
     onChangeClipsPerPage && onChangeClipsPerPage(newNumber);
@@ -59,17 +70,17 @@ const Pagination: FC<PaginationProps> = ({ totalPages, currentPage, clipsPerPage
               <li key={i}>
                 <a
                   className={
-                    "pagination-link" + (currentPage == i ? " is-current" : "")
+                    "pagination-link" + (currentPage === i ? " is-current" : "")
                   }
                   onTouchStart={(): void => {
-                    if (i != currentPage) {
+                    if (i !== currentPage) {
                       onChangePage(i);
                     }
                   }}
                   onMouseDown={(e): void => {
                     e.preventDefault(); // Prevents grabbing focus
 
-                    if (i != currentPage) {
+                    if (i !== currentPage) {
                       onChangePage(i);
                     }
                   }}
@@ -79,7 +90,7 @@ const Pagination: FC<PaginationProps> = ({ totalPages, currentPage, clipsPerPage
               </li>
             ))}
 
-            <li suppressHydrationWarning={true}>
+            <li suppressHydrationWarning={true} /*eslint-disable-next-line no-undef*/>
               {process.browser && <Popup // deprecated but I can't be bothered to fix this
                 trigger={
                   <SubmenuButton >
@@ -147,11 +158,30 @@ const Pagination: FC<PaginationProps> = ({ totalPages, currentPage, clipsPerPage
             </li>
           </ul>
 
+          {showFavoritesButton ?
+            <a
+              className={isOnlyFavorites ? "pagination-previous is-current" : "pagination-previous"}
+              onClick={(): void => { if (setIsOnlyFavorite !== undefined) setIsOnlyFavorite(!isOnlyFavorites) }}
+              style={{ order: 3, padding: "5px 60px" }}
+            >
+              {
+                isOnlyFavorites ?
+                  <span className="icon">
+                    Only Show Favorites
+                  </span>
+                  :
+                  <span className="icon">
+                    Only Show Favorites
+                  </span>
+              }
+
+            </a>
+            :
+            <></>}
           <a
             className="pagination-previous"
             onClick={(): void => {
               if (onFirstPage) return;
-
               onChangePage(currentPage - 1);
             }}
             style={{ order: 3, padding: "5px 3px" }}
@@ -178,6 +208,6 @@ const Pagination: FC<PaginationProps> = ({ totalPages, currentPage, clipsPerPage
       </PaginationBar>
     </div >
   );
-}
+};
 
 export default Pagination;

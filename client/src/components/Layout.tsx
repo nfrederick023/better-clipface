@@ -1,13 +1,14 @@
-import { FC, useEffect, useState } from "react";
-import Container from "./Container";
+import { FC } from "react";
 import { Helmet } from "react-helmet";
-import { LayoutProps } from "../shared/interfaces";
+import { LayoutProps } from "../constants/interfaces";
+import { booleanify } from "../constants/booleanify";
+import { useCookies } from "react-cookie";
+import { useRouter } from "next/router";
+import Container from "./Container";
 import Toggle from "react-toggle";
 import getConfig from "next/config";
 import styled from "styled-components";
-import { useCookies } from "react-cookie";
-import { useRouter } from "next/router";
-import { booleanify } from "../shared/functions";
+
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -80,16 +81,16 @@ const HeaderTitle = styled.h1`
 
 const ClipfaceLayout: FC<LayoutProps> = ({children}) => {
   const router = useRouter();
-  const [cookies, setCookies] = useCookies(['isDarkMode', 'authToken']);
+  const [cookies, setCookies] = useCookies(["isDarkMode", "authToken"]);
 
   const onSignOut = (): void => {
-    setCookies("authToken", '', { path: "/" });
+    setCookies("authToken", "", { path: "/" });
     router.push("/login");
   };
 
   const toggleDarkMode = (): void => {
     setCookies("isDarkMode", !booleanify(cookies.isDarkMode), { path: "/" });
-  }
+  };
 
   return (
     <>
@@ -141,6 +142,6 @@ const ClipfaceLayout: FC<LayoutProps> = ({children}) => {
       </Footer>
     </>
   );
-}
+};
 
 export default ClipfaceLayout;

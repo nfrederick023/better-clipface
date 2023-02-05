@@ -1,8 +1,6 @@
-/* Convenience wrapper for getServerSideProps to enforce authentication */
-
+import { AuthStatus, PropsWithAuth } from "../constants/interfaces";
 import { NextPageContext, Redirect } from "next";
 
-import { PropsWithAuth } from "../shared/interfaces";
 import { Request } from "express";
 import config from "config";
 import isAuthorized from "./auth";
@@ -13,32 +11,31 @@ import isAuthorized from "./auth";
  * This handles regular user authentication as well as single page
  * authentication.
  *
- * @param {function} fn
- * @returns {function}
+ * @param {function} fn The original getServerSideProps function
+ * @returns {function} The getServerSideProps function with authentication
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function (fn: any) {
   return async (ctx: NextPageContext): Promise<{ props: PropsWithAuth } | { redirect: Redirect }> => {
     const urlToRedirect = ctx.req?.url ? "/login?next=" + encodeURIComponent(ctx.req.url ? ctx.req.url : "") : "/login";
     const redirect: Redirect = {
       destination: urlToRedirect,
       permanent: false,
-    }
+    };
     const props: { props: PropsWithAuth } = await fn(ctx);
 
     const authenticated = await isAuthorized(ctx.req as Request);
 
-    if (!authenticated && ctx.req?.url != "/login") {
+    if (!authenticated && ctx.req?.url !== "/login") {
       return { redirect };
     }
 
     if (props.props) {
-      let authStatus;
+      let authStatus: AuthStatus;
 
-      if (!config.has("user_password") || !authenticated) {
-        authStatus = "NO_AUTHENTICATION";
+      if (config.has("user_password") || authenticated) {
+        authStatus = AuthStatus.authenticated;
       } else {
-        authStatus = "AUTHENTICATED";
+        authStatus = AuthStatus.notAuthenticated;
       }
 
       props.props.authStatus = authStatus;
