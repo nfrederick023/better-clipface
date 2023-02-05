@@ -1,14 +1,13 @@
+import Container from "./Container";
 import { FC } from "react";
 import { Helmet } from "react-helmet";
 import { LayoutProps } from "../constants/interfaces";
-import { booleanify } from "../constants/booleanify";
-import { useCookies } from "react-cookie";
-import { useRouter } from "next/router";
-import Container from "./Container";
 import Toggle from "react-toggle";
+import { booleanify } from "../constants/booleanify";
 import getConfig from "next/config";
 import styled from "styled-components";
-
+import { useCookies } from "react-cookie";
+import { useRouter } from "next/router";
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -79,7 +78,7 @@ const HeaderTitle = styled.h1`
   font-size: 1.5rem;
 `;
 
-const ClipfaceLayout: FC<LayoutProps> = ({children}) => {
+const ClipfaceLayout: FC<LayoutProps> = ({ children }) => {
   const router = useRouter();
   const [cookies, setCookies] = useCookies(["isDarkMode", "authToken"]);
 
@@ -112,7 +111,7 @@ const ClipfaceLayout: FC<LayoutProps> = ({children}) => {
             <NavbarContainer>
               <a href="/">
                 <HeaderTitle className="title is-4">
-                  {publicRuntimeConfig.headerTitle}
+                  {publicRuntimeConfig.pageTitle}
                 </HeaderTitle>
               </a>
               <NavbarMenu>

@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "next build",
-    "start": "cross-env NODE_ENV=production next",
+    "start": "next",
     "gensalt": "node -e \"const bcrypt = require('bcrypt'); console.log(bcrypt.genSaltSync())\""
   },
   "dependencies": {
