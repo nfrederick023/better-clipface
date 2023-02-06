@@ -12,7 +12,7 @@ const getRedirect = (url: string): NextRedirect => {
 };
 
 export const redirectToLogin = (ctx: NextPageContext): NextRedirect => {
-  const urlToRedirect = ctx.req?.url ? "/login?next=" + encodeURIComponent(ctx.req.url ? ctx.req.url : "") : "/login";
+  const urlToRedirect = ctx.req?.url && !ctx.req?.url?.includes("_next") ? "/login?next=" + encodeURIComponent(ctx.req.url ? ctx.req.url : "") : "/login";
   return getRedirect(urlToRedirect);
 };
 
