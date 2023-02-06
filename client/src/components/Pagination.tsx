@@ -1,6 +1,7 @@
 import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 
 import Popup from "reactjs-popup";
+import React from "react";
 import range from "lodash/range";
 import styled from "styled-components";
 
@@ -160,8 +161,8 @@ const Pagination: FC<PaginationProps> = ({ totalPages, currentPage, showFavorite
 
           {showFavoritesButton ?
             <a
-              className={isOnlyFavorites ? "pagination-previous is-current" : "pagination-previous"}
-              onClick={(): void => { if (setIsOnlyFavorite !== undefined) setIsOnlyFavorite(!isOnlyFavorites) }}
+              className={isOnlyFavorites ? "pagination-previous pagination-link is-current is-current" : "pagination-previous"}
+              onClick={(): void => { if (setIsOnlyFavorite !== undefined) setIsOnlyFavorite(!isOnlyFavorites); }}
               style={{ order: 3, padding: "5px 60px" }}
             >
               {

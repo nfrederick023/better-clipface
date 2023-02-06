@@ -7,13 +7,14 @@
   "type": "module",
   "scripts": {
     "build": "next build",
-    "start": "next",
+    "start": "next start",
     "gensalt": "node -e \"const bcrypt = require('bcrypt'); console.log(bcrypt.genSaltSync())\""
   },
   "dependencies": {
     "@tippyjs/react": "^4.2.0",
     "bcrypt": "^5.0.0",
     "config": "^3.3.6",
+    "eslint-plugin-react": "^7.32.2",
     "fs-extra": "^10.1.0",
     "glob": "^7.1.7",
     "lodash": "^4.17.20",
@@ -47,7 +48,7 @@
     "@types/react-helmet": "^6.1.5",
     "@types/react-timeago": "^4.1.3",
     "@types/react-toggle": "^4.0.3",
-    "@types/seedrandom": "^3.0.2",
+    "@types/seedrandom": "^3.0.4",
     "@types/styled-components": "^5.1.26",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",

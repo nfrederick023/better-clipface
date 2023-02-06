@@ -1,13 +1,14 @@
-import Container from "./Container";
-import { FC } from "react";
+import { FC, ReactNode } from "react";
+
 import { Helmet } from "react-helmet";
-import { LayoutProps } from "../constants/interfaces";
-import Toggle from "react-toggle";
-import { booleanify } from "../constants/booleanify";
-import getConfig from "next/config";
-import styled from "styled-components";
+import { booleanify } from "../utils/booleanify";
 import { useCookies } from "react-cookie";
 import { useRouter } from "next/router";
+import Container from "./Container";
+import React from "react";
+import Toggle from "react-toggle";
+import getConfig from "next/config";
+import styled from "styled-components";
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -17,7 +18,7 @@ const Header = styled.header`
   background-repeat: no-repeat;
 `;
 
-const NavbarContainer = styled(Container as any)`
+const NavbarContainer = styled(Container)`
   min-height: 3.25rem;
   display: flex;
   align-items: center;
@@ -78,6 +79,10 @@ const HeaderTitle = styled.h1`
   font-size: 1.5rem;
 `;
 
+interface LayoutProps {
+  children?: ReactNode
+}
+
 const ClipfaceLayout: FC<LayoutProps> = ({ children }) => {
   const router = useRouter();
   const [cookies, setCookies] = useCookies(["isDarkMode", "authToken"]);
@@ -85,6 +90,14 @@ const ClipfaceLayout: FC<LayoutProps> = ({ children }) => {
   const onSignOut = (): void => {
     setCookies("authToken", "", { path: "/" });
     router.push("/login");
+  };
+
+  const onLogIn = (): void => {
+    router.push("/login");
+  };
+
+  const onHeaderClick = (): void => {
+    router.push("/");
   };
 
   const toggleDarkMode = (): void => {
@@ -109,7 +122,7 @@ const ClipfaceLayout: FC<LayoutProps> = ({ children }) => {
         <Header className="hero-head">
           <nav>
             <NavbarContainer>
-              <a href="/">
+              <a onClick={onHeaderClick}>
                 <HeaderTitle className="title is-4">
                   {publicRuntimeConfig.pageTitle}
                 </HeaderTitle>
@@ -119,11 +132,13 @@ const ClipfaceLayout: FC<LayoutProps> = ({ children }) => {
                   icons={false}
                   checked={booleanify(cookies.isDarkMode)}
                   onChange={toggleDarkMode} />
-                {cookies.authToken && (
+                {cookies.authToken ? (
                   <a onClick={onSignOut}>
                     Log out
                   </a>
-                )}
+                ) : <a onClick={onLogIn}>
+                  Log in
+                </a>}
               </NavbarMenu>
             </NavbarContainer>
           </nav>

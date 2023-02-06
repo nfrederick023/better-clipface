@@ -1,7 +1,6 @@
-import { MetaData, Video } from "../constants/interfaces";
 import { getState, updateState } from "./state";
 
-import { TagType } from "jsmediatags/types";
+import { Video } from "./interfaces";
 import config from "config";
 import fse from "fs-extra";
 import glob from "glob";
@@ -15,7 +14,7 @@ const CLIPS_GLOB = `${CLIPS_PATH}/*.@(mkv|mp4|webm|mov|mpeg|avi|wmv|json)`;
 
 const listClips = async (): Promise<Video[]> => {
   let clips = glob.sync(CLIPS_GLOB);
-  const clipsMeta: { [key: string]: TagType } = {};
+  //const clipsMeta: { [key: string]: TagType } = {};
 
   // WIP code for updating/viewing metadata (eg video title)
   // clips.forEach((videoPath: string) => {
@@ -33,7 +32,7 @@ const listClips = async (): Promise<Video[]> => {
 
   const clipDetails: Video[] = [];
   for (const filePath of clips) {
-    const clipState = await getVideoState(filePath, clipsMeta);
+    const clipState = await getVideoState(filePath);
     if (clipState) {
       clipDetails.push(
         clipState
@@ -43,10 +42,9 @@ const listClips = async (): Promise<Video[]> => {
   return clipDetails;
 };
 
-export const getVideoState = async (filePath: string, clipsMeta: { [key: string]: TagType }): Promise<Video | null> => {
+export const getVideoState = async (filePath: string): Promise<Video | null> => {
   const videoName = path.basename(filePath);
   const videoStats = fse.statSync(filePath);
-  const videoMeta: TagType = clipsMeta[videoName];
   const state = await getState();
 
   // check if the video already is persisted within the state

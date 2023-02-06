@@ -1,4 +1,4 @@
-import { Video } from "../constants/interfaces";
+import { Video } from "./interfaces";
 import config from "config";
 import fse from "fs-extra";
 import path from "path";
@@ -23,4 +23,13 @@ export const updateState = async (newState: Video[]): Promise<void> => {
   } catch (e) {
     return;
   }
+};
+
+export const updateVideo = async (newVideo: Video): Promise<Video | null | undefined> => {
+  const state = await getState();
+  // remove the old video object and add in the new one
+  const newState = state.filter(function (clip: Video) { return clip.id !== newVideo.id; });
+  newState.push(newVideo);
+  await updateState(newState);
+  return newVideo;
 };

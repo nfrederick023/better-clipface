@@ -2,26 +2,25 @@
  * Watch page - this is where the video is displayed
  */
 
-import { AuthStatus, LinkTypes, Video, WatchPageProps } from "../../constants/interfaces";
+import { AuthStatus, LinkTypes, NextRedirect, Props, PropsWithAuth, Video } from "../../utils/interfaces";
 import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
+import { redirectTo404, redirectToLogin } from "../../utils/redirects";
 
+import { NextPageContext } from "next";
+import { booleanify } from "../../utils/booleanify";
+import { getAuthStatus } from "../../utils/auth";
+import { getState } from "../../utils/state";
+import { useCookies } from "react-cookie";
+import { useRouter } from "next/router";
 import Container from "../../components/Container";
 import CopyClipLink from "../../components/CopyLink";
 import Head from "next/head";
-import { NextPageContext } from "next";
+import React from "react";
 import ReactMarkdown from "react-markdown";
 import TimeAgo from "react-timeago";
-import { booleanify } from "../../constants/booleanify";
-import config from "config";
-import fse from "fs-extra";
 import getConfig from "next/config";
-import { getState } from "../../services/state";
-import path from "path";
 import prettyBytes from "pretty-bytes";
-import requireAuth from "../../services/requireAuth";
 import styled from "styled-components";
-import { useCookies } from "react-cookie";
-import { useRouter } from "next/router";
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -49,6 +48,7 @@ const BackLink = styled.a`
 `;
 
 const SingleClipAuthNotice = styled.p`
+  margin-right: auto;
   opacity: 0.5;
 `;
 
@@ -92,11 +92,15 @@ const VideoDescription = styled.div`
   margin-top: 25px;
 `;
 
-const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
+interface WatchPageProps extends PropsWithAuth {
+  selectedClip: Video
+}
+
+const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
   const router = useRouter();
   const videoRef = useRef() as MutableRefObject<HTMLVideoElement>;
   const [cookies, setCookie] = useCookies(["theaterMode", "videoVolume"]);
-  const [clip, setClip] = useState(selectedClip);
+  const [clip, setClip] = useState(props.selectedClip);
   const [currentURL, setCurrentURL] = useState("");
   const [fullVideoURL, setFullVideoURL] = useState("");
   const clipTitle = clip?.name.split(".").slice(0, -1).join(".");
@@ -115,10 +119,6 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
       videoRef.current.volume = parseFloat(cookies.videoVolume);
     }
   }, [clip]);
-
-  if (!clip) {
-    return <div>404 Clip Not Found</div>;
-  }
 
   const handleBackClick = (): void => {
     videoRef.current.pause();
@@ -178,7 +178,7 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
       <Container>
         <ButtonRow>
           {/* Only show "Back to clips" button to authenticated users */}
-          {authStatus === AuthStatus.authenticated && (
+          {props.authStatus === AuthStatus.authenticated && (
             <BackLink onClick={handleBackClick}>
               <span className="icon">
                 <i className="fas fa-arrow-alt-circle-left"></i>
@@ -187,7 +187,7 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
             </BackLink>
           )}
 
-          {authStatus === AuthStatus.notAuthenticated && (
+          {props.authStatus === AuthStatus.notAuthenticated && (
             <SingleClipAuthNotice>
               <InlineIcon className="fas fa-info-circle" />
               You are using a public link for this clip
@@ -204,7 +204,7 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
             <span>Theater mode</span>
           </button>
           {/* Only show link copying buttons to authenticated users */}
-          {authStatus === AuthStatus.authenticated && (
+          {props.authStatus === AuthStatus.authenticated && (
             <>
               <CopyClipLink clip={clip} noText={true} linkType={LinkTypes.copyLink} />
               {clip.requireAuth ? <CopyClipLink clip={clip} noText={true} updateVideoList={setClip} linkType={LinkTypes.privateLink} /> :
@@ -251,18 +251,27 @@ const WatchPage: FC<WatchPageProps> = ({ authStatus, selectedClip }) => {
   );
 };
 
-export const getServerSideProps = requireAuth(async (ctx: NextPageContext) => {
+export const getServerSideProps = async (ctx: NextPageContext): Promise<Props<WatchPageProps> | NextRedirect> => {
   const clipId: string = ctx.query.id as string;
   const state = await getState();
   const selectedClip = state.find((clip: Video) => { return clip.id === clipId; });
-  if (selectedClip) {
-    return {
-      props: { selectedClip },
-    };
+  const authStatus = await getAuthStatus(ctx);
+
+  // if no clip was found return null
+  if (!selectedClip) {
+    return redirectTo404();
   }
-  return {
-    props: {},
-  };
-});
+
+  // if clip requires auth, check auth status
+  if (selectedClip.requireAuth) {
+    if (authStatus === AuthStatus.authenticated)
+      return { props: { selectedClip, authStatus } };
+    else
+      return redirectToLogin(ctx);
+  }
+
+  // if no auth required
+  return { props: { selectedClip, authStatus } };
+};
 
 export default WatchPage;

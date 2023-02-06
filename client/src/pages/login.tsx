@@ -2,14 +2,17 @@
  * Login page
  */
 
+import { AuthResponse, AuthStatus, NextRedirect, Props } from "../utils/interfaces";
 import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
 import { ParsedUrl, parseUrl } from "next/dist/shared/lib/router/utils/parse-url";
 
-import { AuthResponse } from "../constants/interfaces";
-import { Redirect } from "next/types";
+import { NextPageContext } from "next/types";
+import { getAuthStatus } from "../utils/auth";
+import { redirectToIndex } from "../utils/redirects";
 import { useCookies } from "react-cookie";
 import { useRouter } from "next/router";
 import Container from "../components/Container";
+import React from "react";
 import config from "config";
 import styled from "styled-components";
 
@@ -68,63 +71,58 @@ const LoginPage: FC = () => {
   };
 
   return (
-      <Container>
-        <LoginBox className="box">
-          <p className="has-text-centered has-text-weight-bold">
-            This page is password protected
-          </p>
+    <Container>
+      <LoginBox className="box">
+        <p className="has-text-centered has-text-weight-bold">
+          This page is password protected
+        </p>
 
-          <Form onSubmit={onSubmit}>
-            <div className="field">
-              <p className="control has-icons-left">
-                {/* The username field is not used for anything but Chrome
+        <Form onSubmit={onSubmit}>
+          <div className="field">
+            <p className="control has-icons-left">
+              {/* The username field is not used for anything but Chrome
                 * complains if it's missing */}
-                <input
-                  name="username"
-                  value="default"
-                  autoComplete="username"
-                  hidden={true}
-                  readOnly={true}
-                />
+              <input
+                name="username"
+                value="default"
+                autoComplete="username"
+                hidden={true}
+                readOnly={true}
+              />
 
-                <input
-                  ref={passwordFieldRef}
-                  className={"input" + (error ? " is-danger" : "")}
-                  type="password"
-                  placeholder="Password"
-                  autoComplete="current-password"
-                  disabled={isLoading}
-                  value={password}
-                  onChange={(event): void => onPasswordChange(event.target.value)}
-                />
+              <input
+                ref={passwordFieldRef}
+                className={"input" + (error ? " is-danger" : "")}
+                type="password"
+                placeholder="Password"
+                autoComplete="current-password"
+                disabled={isLoading}
+                value={password}
+                onChange={(event): void => onPasswordChange(event.target.value)}
+              />
 
-                {error && <p className="has-text-danger">{error}</p>}
+              {error && <p className="has-text-danger">{error}</p>}
 
-                <span className="icon is-small is-left">
-                  <i className="fas fa-lock"></i>
-                </span>
-              </p>
-            </div>
-            <div className="field">
-              <p className="control">
-                <LoginButton className="button is-primary" disabled={isLoading}>
-                  {isLoading && <i className="fa fa-cog fa-spin" />}
-                  {!isLoading && "Login"}
-                </LoginButton>
-              </p>
-            </div>
-          </Form>
-        </LoginBox>
-      </Container>
+              <span className="icon is-small is-left">
+                <i className="fas fa-lock"></i>
+              </span>
+            </p>
+          </div>
+          <div className="field">
+            <p className="control">
+              <LoginButton className="button is-primary" disabled={isLoading}>
+                {isLoading && <i className="fa fa-cog fa-spin" />}
+                {!isLoading && "Login"}
+              </LoginButton>
+            </p>
+          </div>
+        </Form>
+      </LoginBox>
+    </Container>
   );
 };
 
-/**
- * Attempts to log in, yields true if login succeeds, false otherwise
- *
- * @param {string} password
- */
- export const login = async(password: string): Promise<AuthResponse | undefined> => {
+export const login = async (password: string): Promise<AuthResponse | undefined> => {
 
   const response = await fetch("/api/login", {
     method: "POST",
@@ -140,15 +138,13 @@ const LoginPage: FC = () => {
   return undefined;
 };
 
-export const getServerSideProps = (): { redirect: Redirect } | { props: Record<string, never> } => {
-  // If no user authentication is configured, forward to the index page
-  if (!config.has("user_password")) {
-    const redirect: Redirect = {
-      destination: "/",
-      permanent: false,
-    };
-    return { redirect };
+export const getServerSideProps = async (ctx: NextPageContext): Promise<NextRedirect | Props<Record<string, never>>> => {
+  const authStatus = await getAuthStatus(ctx);
+  // if no user authentication is configured or already authenticated forward to the index page
+  if (!config.has("user_password") || authStatus === AuthStatus.authenticated) {
+    return redirectToIndex();
   }
+
   return { props: {} };
 };
 

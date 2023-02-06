@@ -1,11 +1,11 @@
-import { CopyLinkProps, LinkTypes, Video } from "../constants/interfaces";
 import { FC, useEffect, useState } from "react";
+import { LinkTypes, Video } from "../utils/interfaces";
 
+import React from "react";
 import Tippy from "@tippyjs/react";
 import styled from "styled-components";
-import updateClip from "../constants/api/video";
 
-const CopyTextContainer = styled.span`
+export const CopyTextContainer = styled.span`
  .favorite {
     width: 100px
  }
@@ -13,6 +13,13 @@ const CopyTextContainer = styled.span`
    width: 80px;
  }
 `;
+
+export interface CopyLinkProps {
+  updateVideoList?: (clip: Video) => void,
+  clip: Video,
+  noText: boolean,
+  linkType: LinkTypes
+}
 
 const CopyLink: FC<CopyLinkProps> = ({ updateVideoList, clip, noText = false, linkType }) => {
   const [linkCopied, setLinkCopied] = useState(false);
@@ -69,7 +76,7 @@ const CopyLink: FC<CopyLinkProps> = ({ updateVideoList, clip, noText = false, li
   const updateNewClip = async (newClip: Video): Promise<void> => {
     if (updateVideoList) {
       const updatedClip = await updateClip(newClip);
-      if (updatedClip.body) {
+      if (updatedClip.ok) {
         updateVideoList(await updatedClip.json());
         setLinkCopied(true);
       }
@@ -136,6 +143,15 @@ const CopyLink: FC<CopyLinkProps> = ({ updateVideoList, clip, noText = false, li
       </Tippy>
     </Tippy>
   );
+};
+
+const updateClip = async (clip: Video): Promise<Response> => {
+  const response = await fetch("/api/video", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(clip),
+  });
+  return response;
 };
 
 export default CopyLink;

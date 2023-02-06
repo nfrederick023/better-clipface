@@ -4,7 +4,7 @@
 
 import { Request, Response } from "express";
 
-import { hashPassword } from "../../services/auth";
+import { hashPassword } from "../../utils/auth";
 import config from "config";
 
 const login = async (req: Request, res: Response): Promise<undefined> => {

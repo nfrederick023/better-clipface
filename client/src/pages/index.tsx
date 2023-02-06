@@ -2,21 +2,25 @@
  * Index page - shows a list of available clips
  */
 
-import { AuthStatus, IndexPageProps, LinkTypes, SortTypes, Video } from "../constants/interfaces";
+import { AuthStatus, LinkTypes, Props, PropsWithAuth, SortTypes, Video } from "../utils/interfaces";
 import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
+import { NextPageContext, Redirect } from "next";
+import { redirectTo401, redirectToLogin } from "../utils/redirects";
+import CopyClipLink, { CopyTextContainer } from "../components/CopyLink";
 
-import Container from "../components/Container";
-import CopyClipLink from "../components/CopyLink";
-import Pagination from "../components/Pagination";
-import Router from "next/router";
-import TimeAgo from "react-timeago";
-import debounce from "lodash/debounce";
-import listClips from "../services/listClips";
-import prettyBytes from "pretty-bytes";
-import requireAuth from "../services/requireAuth";
-import styled from "styled-components";
+import { getAuthStatus } from "../utils/auth";
 import { toNumber } from "lodash";
 import { useCookies } from "react-cookie";
+import Container from "../components/Container";
+import Pagination from "../components/Pagination";
+import React from "react";
+import Router from "next/router";
+import TimeAgo from "react-timeago";
+import config from "config";
+import debounce from "lodash/debounce";
+import listClips from "../utils/listClips";
+import prettyBytes from "pretty-bytes";
+import styled from "styled-components";
 
 const ClearFilterButton = styled.span`
   cursor: pointer;
@@ -64,9 +68,21 @@ const LinkHeader = styled.th<{ width?: string }>`
   cursor: pointer;
 `;
 
-const IndexPage: FC<IndexPageProps> = ({ allClips, authStatus }) => {
+const SmallButton = styled.button`
+  width: 30px
+`;
+
+interface IndexPageBase extends PropsWithAuth {
+  allClips: Video[];
+}
+
+interface IndexPage extends IndexPageBase {
+  currentPage: number;
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+}
+
+const Index: FC<IndexPage> = ({ authStatus, allClips, currentPage, setCurrentPage }) => {
   const [filter, setFilter] = useState("");
-  const [currentPage, setCurrentPage] = useState(0);
   const [clips, setClips] = useState<Video[]>([]);
   const [sort, setSort] = useState(SortTypes.saved);
   const [isAscending, setIsAscending] = useState(true);
@@ -101,7 +117,7 @@ const IndexPage: FC<IndexPageProps> = ({ allClips, authStatus }) => {
     }
 
     if (isOnlyFavorites) {
-      sortedClips = sortedClips.filter(clip => clip.isFavorite)
+      sortedClips = sortedClips.filter(clip => clip.isFavorite);
     }
 
     setTotalClipCount(sortedClips.length);
@@ -251,7 +267,6 @@ const IndexPage: FC<IndexPageProps> = ({ allClips, authStatus }) => {
                 {clip.title || clip.name.split(".").slice(0, -1).join(".")}
 
                 <RowButtons>
-                  <CopyClipLink clip={clip} noText={true} linkType={LinkTypes.copyLink} />
 
                   {authStatus === AuthStatus.authenticated && (
                     // There's no point in showing the "Copy public link"
@@ -269,6 +284,21 @@ const IndexPage: FC<IndexPageProps> = ({ allClips, authStatus }) => {
                       }
                     </>
                   )}
+                  {authStatus === AuthStatus.notAuthenticated && (
+                    <>
+                      {clip.isFavorite && (
+                        <SmallButton
+                          className={"button is-small"}
+                          onClick={(e): void => {
+                            e.stopPropagation();
+                          }}
+                        >
+                          <CopyTextContainer> <i className="fas fa-star" ></i></CopyTextContainer>
+                        </SmallButton>
+                      )}
+                    </>
+                  )}
+                  <CopyClipLink clip={clip} noText={true} linkType={LinkTypes.copyLink} />
 
                 </RowButtons>
               </td>
@@ -297,14 +327,21 @@ const IndexPage: FC<IndexPageProps> = ({ allClips, authStatus }) => {
   );
 };
 
-export const getServerSideProps = requireAuth(async () => {
-  let allClips: Video[] = [];
-  allClips = await listClips();
-  return {
-    props: {
-      allClips,
-    }
-  };
-});
+export const getServerSideProps = async (ctx: NextPageContext): Promise<Props<IndexPageBase> | { redirect: Redirect }> => {
+  const authStatus = await getAuthStatus(ctx);
+  let allClips = await listClips();
 
-export default IndexPage;
+
+  if (authStatus === AuthStatus.notAuthenticated) {
+    if (config.get("private_clips_list"))
+      if (config.has("user_password")) {
+        return redirectToLogin(ctx);
+      } else
+        return redirectTo401();
+    else
+      allClips = allClips.filter(clip => !clip.requireAuth);
+  }
+  return { props: { allClips, authStatus } };
+};
+
+export default Index;

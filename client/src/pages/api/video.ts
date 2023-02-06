@@ -4,9 +4,16 @@
 
 import { Request, Response } from "express";
 
-import updateVideo from "../../services/video";
+import { isTokenValid } from "../../utils/auth";
+import { updateVideo } from "../../utils/state";
 
 const useAuth = (async (req: Request, res: Response): Promise<void> => {
+
+  if (!(await isTokenValid(req))) {
+    res.statusCode = 401;
+    res.end(JSON.stringify("Unauthorized"));
+    return;
+  }
 
   if (req.method === "PUT") {
     const body = await updateVideo(req.body);
@@ -25,4 +32,4 @@ const useAuth = (async (req: Request, res: Response): Promise<void> => {
   res.end();
 });
 
-export default useAuth
+export default useAuth;

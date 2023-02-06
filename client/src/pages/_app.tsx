@@ -6,13 +6,13 @@ import "react-toggle/style.css";
 
 import { Cookies, CookiesProvider } from "react-cookie";
 import { NextPage, NextPageContext } from "next";
+import { ReactElement, useState } from "react";
 
 import { AppContext } from "next/app";
-import { MyAppProps } from "../constants/interfaces";
-import { ReactElement } from "react";
 import { Request } from "express";
 import { createGlobalStyle } from "styled-components";
 import ClipfaceLayout from "../components/Layout";
+import React from "react";
 import getConfig from "next/config";
 
 const { publicRuntimeConfig } = getConfig();
@@ -46,29 +46,39 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-const MyApp: NextPage<MyAppProps> = ({ Component, pageProps, allCookies }: MyAppProps): ReactElement => {
-  const cookies = new Cookies(allCookies);
+interface MyAppProps {
+  allCookies: { [key: string]: string | boolean | number },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Component?: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pageProps?: any
+}
+
+const MyApp: NextPage<MyAppProps> = ({ ...props }: MyAppProps): ReactElement => {
+  const cookies = new Cookies(props.allCookies);
+
+  const [currentPage, setCurrentPage] = useState(0);
 
   const setCookies = (name: string, value: string | boolean | number): void => {
     cookies.set(name, value, { path: "/", sameSite: "strict", expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)) });
-  }
-  if (typeof allCookies?.theaterMode == "undefined") setCookies("theaterMode", false);
-  if (typeof allCookies?.videoVolume == "undefined") setCookies("videoVolume", 1);
-  if (typeof allCookies?.clipsPerPage == "undefined") setCookies("clipsPerPage", 40);
-  if (typeof allCookies?.isDarkMode == "undefined") setCookies("isDarkMode", true);
-  if (typeof allCookies?.authToken == "undefined") setCookies("authToken", "");
+  };
+  if (typeof props.allCookies?.theaterMode === "undefined") setCookies("theaterMode", false);
+  if (typeof props.allCookies?.videoVolume === "undefined") setCookies("videoVolume", 1);
+  if (typeof props.allCookies?.clipsPerPage === "undefined") setCookies("clipsPerPage", 40);
+  if (typeof props.allCookies?.isDarkMode === "undefined") setCookies("isDarkMode", true);
+  if (typeof props.allCookies?.authToken === "undefined") setCookies("authToken", "");
   return (
     <>
       <title>{publicRuntimeConfig.pageTitle}</title>
       <GlobalStyle />
       <CookiesProvider cookies={cookies}>
-      <ClipfaceLayout>
-        <Component {...pageProps} />
-      </ClipfaceLayout>
+        <ClipfaceLayout>
+          <props.Component {...props.pageProps} currentPage={currentPage} setCurrentPage={setCurrentPage} />
+        </ClipfaceLayout>
       </CookiesProvider>
     </>
   );
-}
+};
 
 MyApp.getInitialProps = async (ctx: NextPageContext): Promise<MyAppProps> => {
   const context = ctx as unknown as AppContext;

@@ -7,11 +7,11 @@ import * as mime from "mime-types";
 import { Request, Response } from "express";
 
 import { NodeHeaders } from "next/dist/server/web/types";
-import { Video } from "../../../constants/interfaces";
+import { Video } from "../../../utils/interfaces";
+import { getState } from "../../../utils/state";
+import { isTokenValid } from "../../../utils/auth";
 import config from "config";
 import fs from "fs";
-import { getState } from "../../../services/state";
-import isAuthorized from "../../../services/auth";
 import path from "path";
 
 const CLIPS_PATH: string = config.get("clips_path");
@@ -19,28 +19,31 @@ const CLIPS_PATH: string = config.get("clips_path");
 const getVideoByID = async (req: Request, res: Response): Promise<void> => {
 
   const clipId = req.query.id;
-  const state = await await getState();
+  const state = await getState();
   const video: Video | undefined = state.find((clip: Video) => { return clip.id === clipId; });
+
   if (video) {
     const clipPath = path.join(CLIPS_PATH, video.name);
 
-    if (!fs.existsSync(clipPath)) {
-      res.statusCode = 404;
-      res.end();
+    if (video.requireAuth && !(await isTokenValid(req))) {
+      res.statusCode = 401;
+      res.end(JSON.stringify("Unauthorized"));
       return;
     }
 
-    if (video.requireAuth && !isAuthorized(req)) {
-      res.statusCode = 401;
-      res.end();
+    if (!fs.existsSync(clipPath)) {
+      res.statusCode = 404;
+      res.end(JSON.stringify("Video not found in file path!"));
       return;
     }
 
     serveVideo(req, res, clipPath);
-
+    return;
   }
 
-
+  res.statusCode = 404;
+  res.end(JSON.stringify("Could not locate video!"));
+  return;
 };
 
 /*
