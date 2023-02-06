@@ -8,6 +8,7 @@ import { NextPageContext, Redirect } from "next";
 import { redirectTo401, redirectToLogin } from "../utils/redirects";
 import CopyClipLink, { CopyTextContainer } from "../components/CopyLink";
 
+import { booleanify } from "../utils/booleanify";
 import { getAuthStatus } from "../utils/auth";
 import { toNumber } from "lodash";
 import { useCookies } from "react-cookie";
@@ -331,10 +332,9 @@ export const getServerSideProps = async (ctx: NextPageContext): Promise<Props<In
   const authStatus = await getAuthStatus(ctx);
   let allClips = await listClips();
 
-
   if (authStatus === AuthStatus.notAuthenticated) {
-    if (config.get("private_clips_list"))
-      if (config.has("user_password")) {
+    if (booleanify(config.get("private_clips_list")))
+      if (config.get("user_password")) {
         return redirectToLogin(ctx);
       } else
         return redirectTo401();

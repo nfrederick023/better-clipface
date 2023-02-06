@@ -12,7 +12,7 @@ import config from "config";
 
 export const getAuthStatus = async (ctx: NextPageContext): Promise<AuthStatus> => {
 
-  if (!config.has("user_password"))
+  if (!config.get("user_password"))
     return AuthStatus.notAuthenticated;
 
   const hasAuthToken = !!(ctx.req as Request | undefined)?.cookies?.authToken;

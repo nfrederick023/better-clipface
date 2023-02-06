@@ -6,6 +6,5 @@
 clips_path = "CLIPFACE_CLIPS_PATH"
 user_password = "CLIPFACE_USER_PASSWORD"
 secure_cookies = "CLIPFACE_SECURE_COOKIES"
-assets_path = "CLIPFACE_ASSETS_PATH"
 private_clips_list = "CLIPFACE_PRIVATE_CLIPS_LIST"
 page_title = "CLIPFACE_SITE_TITLE"

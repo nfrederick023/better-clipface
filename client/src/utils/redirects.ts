@@ -25,5 +25,5 @@ export const redirectTo404 = (): NextRedirect => {
 };
 
 export const redirectTo401 = (): NextRedirect => {
-  return getRedirect("/error/403");
+  return getRedirect("/error/401");
 };

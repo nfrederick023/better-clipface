@@ -4,11 +4,12 @@
   "author": "Tomas Sandven",
   "license": "MIT",
   "private": true,
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "gensalt": "node -e \"const bcrypt = require('bcrypt'); console.log(bcrypt.genSaltSync())\""
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@tippyjs/react": "^4.2.0",
@@ -36,6 +37,7 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^12.3.1",
+    "@playwright/test": "^1.15.0",
     "@types/bcrypt": "^5.0.0",
     "@types/config": "^3.3.0",
     "@types/express": "^4.17.13",

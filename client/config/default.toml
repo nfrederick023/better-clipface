@@ -4,8 +4,7 @@
 # Each option is documented in README.md
 #
 clips_path = "/clips"
-user_password = "test"
+user_password = ""
 secure_cookies = true
-assets_path = ""
-private_clips_list = false
+private_clips_list = true
 page_title = "Snacksable"

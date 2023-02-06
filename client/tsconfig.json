@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
     "target": "ES6",
+    "types": [
+      "node"
+    ],
     "lib": [
       "dom",
       "dom.iterable",
@@ -23,9 +26,9 @@
   },
   "include": [
     "./src",
+    "e2e",
   ],
   "exclude": [
-    "node_modules",
-    "**/*.spec.ts"
+    "node_modules"
   ]
 }

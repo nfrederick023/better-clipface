@@ -14,7 +14,7 @@ const login = async (req: Request, res: Response): Promise<undefined> => {
     res.end();
     return;
   }
-  if (!config.has("user_password")) {
+  if (!config.get("user_password")) {
     res.statusCode = 400;
     res.end("User authentication not configured\n");
     return;

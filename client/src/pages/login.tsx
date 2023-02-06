@@ -141,7 +141,7 @@ export const login = async (password: string): Promise<AuthResponse | undefined>
 export const getServerSideProps = async (ctx: NextPageContext): Promise<NextRedirect | Props<Record<string, never>>> => {
   const authStatus = await getAuthStatus(ctx);
   // if no user authentication is configured or already authenticated forward to the index page
-  if (!config.has("user_password") || authStatus === AuthStatus.authenticated) {
+  if (!config.get("user_password") || authStatus === AuthStatus.authenticated) {
     return redirectToIndex();
   }
 

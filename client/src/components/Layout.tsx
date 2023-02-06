@@ -80,10 +80,11 @@ const HeaderTitle = styled.h1`
 `;
 
 interface LayoutProps {
-  children?: ReactNode
+  children?: ReactNode,
+  hasAuth: boolean
 }
 
-const ClipfaceLayout: FC<LayoutProps> = ({ children }) => {
+const ClipfaceLayout: FC<LayoutProps> = ({ children, hasAuth }) => {
   const router = useRouter();
   const [cookies, setCookies] = useCookies(["isDarkMode", "authToken"]);
 
@@ -103,6 +104,10 @@ const ClipfaceLayout: FC<LayoutProps> = ({ children }) => {
   const toggleDarkMode = (): void => {
     setCookies("isDarkMode", !booleanify(cookies.isDarkMode), { path: "/" });
   };
+
+  if (!hasAuth && cookies.authToken) {
+    setCookies("authToken", "", { path: "/" });
+  }
 
   return (
     <>
@@ -132,13 +137,19 @@ const ClipfaceLayout: FC<LayoutProps> = ({ children }) => {
                   icons={false}
                   checked={booleanify(cookies.isDarkMode)}
                   onChange={toggleDarkMode} />
-                {cookies.authToken ? (
-                  <a onClick={onSignOut}>
-                    Log out
-                  </a>
-                ) : <a onClick={onLogIn}>
-                  Log in
-                </a>}
+                {hasAuth && (
+                  <>
+                    {
+                      cookies.authToken ? (
+                        <a onClick={onSignOut}>
+                          Log out
+                        </a>
+                      ) : <a onClick={onLogIn}>
+                        Log in
+                      </a>
+                    }
+                  </>
+                )}
               </NavbarMenu>
             </NavbarContainer>
           </nav>
