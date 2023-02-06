@@ -2,11 +2,16 @@ import { getState, updateState } from "./state";
 
 import { Video } from "./interfaces";
 import config from "config";
+import ffmpeg from "fluent-ffmpeg";
+import ffprobeStatic from "ffprobe-static";
 import fse from "fs-extra";
 import glob from "glob";
 import path from "path";
+import pathToFfmpeg from "ffmpeg-static";
 import seedrandom from "seedrandom";
 
+ffmpeg.setFfprobePath(ffprobeStatic.path);
+ffmpeg.setFfmpegPath(pathToFfmpeg ?? "");
 // import jsmediatags from "jsmediatags";
 
 const CLIPS_PATH: string = config.get("clips_path");
@@ -49,6 +54,15 @@ export const getVideoState = async (filePath: string): Promise<Video | null> => 
 
   // check if the video already is persisted within the state
   const clipState = state.find((video) => { return video.name === videoName; });
+
+  // ffmpeg(filePath)
+  //   .screenshots({
+  //     filename: videoName + ".jpg",
+  //     count: 1,
+  //     folder: "./thumbnails/",
+  //     size: "1920x1080"
+  //   });
+
   if (clipState) {
     return clipState;
   }

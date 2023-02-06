@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /*
  * Watch page - this is where the video is displayed
  */
@@ -7,6 +8,7 @@ import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
 import { redirectTo404, redirectToLogin } from "../../utils/redirects";
 
 import { NextPageContext } from "next";
+import { RequestData } from "next/dist/server/web/types";
 import { booleanify } from "../../utils/booleanify";
 import { getAuthStatus } from "../../utils/auth";
 import { getState } from "../../utils/state";
@@ -94,6 +96,7 @@ const VideoDescription = styled.div`
 
 interface WatchPageProps extends PropsWithAuth {
   selectedClip: Video
+  currentURL: string
 }
 
 const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
@@ -101,17 +104,13 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
   const videoRef = useRef() as MutableRefObject<HTMLVideoElement>;
   const [cookies, setCookie] = useCookies(["theaterMode", "videoVolume"]);
   const [clip, setClip] = useState(props.selectedClip);
-  const [currentURL, setCurrentURL] = useState("");
-  const [fullVideoURL, setFullVideoURL] = useState("");
   const clipTitle = clip?.name.split(".").slice(0, -1).join(".");
 
   // The video volume can't be set directly on the element for some reason, so
   // we set it immediately after rendering
 
   useEffect(() => {
-    const url = new URL(window.location.href);
-    setCurrentURL(window.location.href);
-    setFullVideoURL(`${url.protocol}//${url.host}${videoSrc}`);
+
     if (clip) {
       document.title = clipTitle + " - " + publicRuntimeConfig.pageTitle;
     }
@@ -126,9 +125,10 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
   };
 
   const videoSrc = "/api/watch/" + encodeURIComponent(clip.id);
+  const currentURL = new URL(props.currentURL);
+  const fullVideoURL = `${currentURL.protocol}//${currentURL.host}${videoSrc}`;
 
   const handleVolumeChange = (): void => {
-
     let volume: number;
     if (videoRef.current.muted || videoRef.current.volume === 0) {
       volume = 0;
@@ -157,7 +157,7 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
       <>
         <Head>
           <title>{clipTitle + " - " + publicRuntimeConfig.pageTitle}</title>
-          <meta property="og:type" data-value="video.other" />
+          <meta property="og:type" data-value="video" />
           <meta property="og:site_name" data-value={publicRuntimeConfig.pageTitle} />
           <meta property="og:title" data-value={clipTitle} />
           <meta property="og:url" data-value={currentURL} />
@@ -169,7 +169,6 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
           <meta property="og:video" data-value={fullVideoURL} />
           <meta property="og:video:url" data-value={fullVideoURL} />
           <meta property="og:video:secure_url" data-value={fullVideoURL} />
-          <meta property="og:video:type" content={clip.mime} />
           <meta property="og:video:width" content="1280" />
           <meta property="og:video:height" content="720" />
         </Head >
@@ -256,6 +255,11 @@ export const getServerSideProps = async (ctx: NextPageContext): Promise<Props<Wa
   const state = await getState();
   const selectedClip = state.find((clip: Video) => { return clip.id === clipId; });
   const authStatus = await getAuthStatus(ctx);
+  //@ts-ignore
+  const protocol = ctx.req?.headers?.["x-forwarded-proto"] || "http";
+  //@ts-ignore
+  const hostname = ctx.req?.headers?.["x-forwarded-host"] || ctx.req?.headers["host"];
+  const currentURL = new URL(ctx.req?.url, `${protocol}://${hostname}`).toString();
 
   // if no clip was found return null
   if (!selectedClip) {
@@ -265,13 +269,13 @@ export const getServerSideProps = async (ctx: NextPageContext): Promise<Props<Wa
   // if clip requires auth, check auth status
   if (selectedClip.requireAuth) {
     if (authStatus === AuthStatus.authenticated)
-      return { props: { selectedClip, authStatus } };
+      return { props: { selectedClip, currentURL, authStatus } };
     else
       return redirectToLogin(ctx);
   }
 
   // if no auth required
-  return { props: { selectedClip, authStatus } };
+  return { props: { selectedClip, currentURL, authStatus } };
 };
 
 export default WatchPage;
