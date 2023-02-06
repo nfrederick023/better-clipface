@@ -57,7 +57,7 @@ const LoginPage: FC = () => {
       .then((res) => {
         if (res?.authToken) {
           cookies.authToken;
-          setCookie("authToken", res.authToken, { path: "/" });
+          setCookie("authToken", res.authToken, { path: "/", maxAge: 31536000, sameSite: "strict" });
           router.push(next);
         } else {
           setIsLoading(false);
