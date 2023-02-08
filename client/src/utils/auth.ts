@@ -4,10 +4,11 @@
  * This module should only be imported from server code.
  */
 
+import { randomBytes, scryptSync } from "crypto";
+
 import { AuthStatus } from "./interfaces";
 import { NextPageContext } from "next";
 import { Request } from "express";
-import bcrypt from "bcrypt";
 import config from "config";
 
 export const getAuthStatus = async (ctx: NextPageContext): Promise<AuthStatus> => {
@@ -38,11 +39,12 @@ export const checkHashedPassword = async (user: string, hashedPassword: string):
     //throw "Logging in as non-default user is not yet supported";
   }
 
-  return !!(await bcrypt.compare(config.get("user_password"), hashedPassword));
+  const salt = hashedPassword.slice(64);
+  const serverPassword = scryptSync(config.get("user_password"), salt, 32).toString("hex") + salt;
+  return serverPassword === hashedPassword;
 };
 
 export const hashPassword = async (password: string): Promise<string> => {
-  const salt = await bcrypt.genSalt();
-
-  return await bcrypt.hash(password, salt);
+  const salt = randomBytes(16).toString("hex");
+  return scryptSync(password, salt, 32).toString("hex") + salt;
 };

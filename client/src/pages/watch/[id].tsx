@@ -110,7 +110,6 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
   // we set it immediately after rendering
 
   useEffect(() => {
-
     if (clip) {
       document.title = clipTitle + " - " + publicRuntimeConfig.pageTitle;
     }
@@ -259,6 +258,7 @@ export const getServerSideProps = async (ctx: NextPageContext): Promise<Props<Wa
   const protocol = ctx.req?.headers?.["x-forwarded-proto"] || "http";
   //@ts-ignore
   const hostname = ctx.req?.headers?.["x-forwarded-host"] || ctx.req?.headers["host"];
+  //@ts-ignore
   const currentURL = new URL(ctx.req?.url, `${protocol}://${hostname}`).toString();
 
   // if no clip was found return null

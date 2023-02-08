@@ -1,7 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-
+/* eslint-disable */
 const config = require("config");
 const fse = require("fs-extra");
 const path = require("path");
@@ -24,7 +21,7 @@ module.exports = {
   publicRuntimeConfig: {
     // Will be available on both server and client
     pageTitle: config.get("page_title"),
-    hasPassword: config.get("user_password")
+    hasAuth: !!config.get("user_password"),
   },
   compiler: {
     // ssr and displayName are configured by default

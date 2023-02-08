@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
     "target": "ES6",
-    "types": [
-      "node"
-    ],
     "lib": [
       "dom",
       "dom.iterable",
@@ -25,10 +22,10 @@
     "resolveJsonModule": true
   },
   "include": [
-    "./src",
-    "e2e",
+    "src/**/*.ts",
+    "./*.ts",
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
   ]
 }

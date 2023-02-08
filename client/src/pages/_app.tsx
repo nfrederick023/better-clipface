@@ -73,7 +73,7 @@ const MyApp: NextPage<MyAppProps> = ({ ...props }: MyAppProps): ReactElement => 
       <title>{publicRuntimeConfig.pageTitle}</title>
       <GlobalStyle />
       <CookiesProvider cookies={cookies}>
-        <ClipfaceLayout hasAuth={publicRuntimeConfig.hasPassword}>
+        <ClipfaceLayout hasAuth={publicRuntimeConfig.hasAuth}>
           <props.Component {...props.pageProps} currentPage={currentPage} setCurrentPage={setCurrentPage} />
         </ClipfaceLayout>
       </CookiesProvider>
