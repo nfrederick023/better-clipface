@@ -6,8 +6,8 @@
 import * as mime from "mime-types";
 
 import { AuthStatus, LinkTypes, NextRedirect, Props, PropsWithAuth, Video } from "../../utils/interfaces";
-import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
 import { redirectTo404, redirectToLogin } from "../../utils/redirects";
+import React, { FC, MutableRefObject, useEffect, useRef, useState } from "react";
 
 import { NextPageContext } from "next";
 import { booleanify } from "../../utils/booleanify";
@@ -18,7 +18,6 @@ import { useRouter } from "next/router";
 import Container from "../../components/Container";
 import CopyClipLink from "../../components/CopyLink";
 import Head from "next/head";
-import React from "react";
 import ReactMarkdown from "react-markdown";
 import TimeAgo from "react-timeago";
 import getConfig from "next/config";
@@ -95,6 +94,10 @@ const VideoDescription = styled.div`
   margin-top: 25px;
 `;
 
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const StyledMeta = styled.meta`` as any;
+
 interface WatchPageProps extends PropsWithAuth {
   selectedClip: Video;
   mimeType: string | false;
@@ -161,17 +164,17 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
       <>
         <Head>
           <title>{clipTitle + " - " + publicRuntimeConfig.pageTitle}</title>
-          <meta property="og:type" value="video.other" />
-          <meta property="og:site_name" value={publicRuntimeConfig.pageTitle} />
-          <meta property="og:url" value={currentURL} />
-          <meta property="og:title" value={props.selectedClip.name} />
-          <meta property="og:image" content={fullThumbSrc} />
-          <meta property="og:video" value={fullVideoURL} />
-          <meta property="og:video:url" value={fullVideoURL} />
-          <meta property="og:video:secure_url" value={fullVideoURL} />
-          <meta property="og:video:type" content={props.mimeType} />
-          <meta property="og:video:width" content="1280" />
-          <meta property="og:video:height" content="720" />
+          <StyledMeta property="og:type" value="video.other" />
+          <StyledMeta property="og:site_name" value={publicRuntimeConfig.pageTitle} />
+          <StyledMeta property="og:url" value={currentURL} />
+          <StyledMeta property="og:title" value={props.selectedClip.name} />
+          <StyledMeta property="og:image" content={fullThumbSrc} />
+          <StyledMeta property="og:video" value={fullVideoURL} />
+          <StyledMeta property="og:video:url" value={fullVideoURL} />
+          <StyledMeta property="og:video:secure_url" value={fullVideoURL} />
+          <StyledMeta property="og:video:type" content={props.mimeType.toString()} />
+          <StyledMeta property="og:video:width" content="1280" />
+          <StyledMeta property="og:video:height" content="720" />
         </Head >
       </>
 
