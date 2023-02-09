@@ -6,9 +6,9 @@ import { Request, Response } from "express";
 import { getState, updateVideo } from "../../../utils/state";
 
 import { Video } from "../../../utils/interfaces";
-import config from "config";
-import fs from 'fs';
 import { isTokenValid } from "../../../utils/auth";
+import config from "config";
+import fs from "fs";
 
 const useAuth = (async (req: Request, res: Response): Promise<void> => {
 
@@ -24,8 +24,8 @@ const useAuth = (async (req: Request, res: Response): Promise<void> => {
     }
 
     const CLIPS_PATH: string | undefined = config.get("clips_path");
-    res.writeHead(200, { "Content-Type": "image/png" });
-    fs.createReadStream(`${CLIPS_PATH}/assets/thumbnails/${clipId}.png`).pipe(res);
+    res.writeHead(200, { "Content-Type": "image/jpeg" });
+    fs.createReadStream(`${CLIPS_PATH}/assets/thumbnails/${clipId}.jpg`).pipe(res);
     return;
   }
 

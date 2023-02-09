@@ -55,13 +55,13 @@ export const getVideoState = async (filePath: string): Promise<Video | null> => 
   // check if the video already is persisted within the state
   const clipState = state.find((video) => { return video.name === videoName; });
 
-  // ffmpeg(filePath)
-  //   .screenshots({
-  //     filename: videoName + ".jpg",
-  //     count: 1,
-  //     folder: "./thumbnails/",
-  //     size: "1920x1080"
-  //   });
+  ffmpeg(filePath)
+    .screenshots({
+      filename: clipState?.id + ".jpg",
+      count: 1,
+      folder: config.get("clips_path") + "/assets/thumbnails/",
+      size: "1920x1080"
+    });
 
   if (clipState) {
     return clipState;
