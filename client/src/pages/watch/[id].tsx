@@ -3,26 +3,27 @@
  * Watch page - this is where the video is displayed
  */
 
+import * as mime from "mime-types";
+
 import { AuthStatus, LinkTypes, NextRedirect, Props, PropsWithAuth, Video } from "../../utils/interfaces";
 import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
 import { redirectTo404, redirectToLogin } from "../../utils/redirects";
 
+import { NextPageContext } from "next";
+import { booleanify } from "../../utils/booleanify";
+import { getAuthStatus } from "../../utils/auth";
+import { getState } from "../../utils/state";
+import { useCookies } from "react-cookie";
+import { useRouter } from "next/router";
 import Container from "../../components/Container";
 import CopyClipLink from "../../components/CopyLink";
 import Head from "next/head";
-import { NextPageContext } from "next";
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import { RequestData } from "next/dist/server/web/types";
 import TimeAgo from "react-timeago";
-import { booleanify } from "../../utils/booleanify";
-import { getAuthStatus } from "../../utils/auth";
 import getConfig from "next/config";
-import { getState } from "../../utils/state";
 import prettyBytes from "pretty-bytes";
 import styled from "styled-components";
-import { useCookies } from "react-cookie";
-import { useRouter } from "next/router";
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -95,8 +96,9 @@ const VideoDescription = styled.div`
 `;
 
 interface WatchPageProps extends PropsWithAuth {
-  selectedClip: Video
-  currentURL: string
+  selectedClip: Video;
+  mimeType: string | false;
+  currentURL: string;
 }
 
 const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
@@ -128,7 +130,7 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
   const currentURL = new URL(props.currentURL);
   const src = `${currentURL.protocol}//${currentURL.host}`;
   const fullVideoURL = `${src}${videoSrc}`;
-  const fullThumbSrc = `${src}${thumbSrc}`;;
+  const fullThumbSrc = `${src}${thumbSrc}`;
 
   const handleVolumeChange = (): void => {
     let volume: number;
@@ -162,12 +164,12 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
           <meta property="og:type" value="video.other" />
           <meta property="og:site_name" value={publicRuntimeConfig.pageTitle} />
           <meta property="og:url" value={currentURL} />
-          <meta property="og:title" value={clipTitle} />
-          <meta property="og:video" value={fullVideoURL} />
+          <meta property="og:title" value={props.selectedClip.name} />
           <meta property="og:image" content={fullThumbSrc} />
+          <meta property="og:video" value={fullVideoURL} />
           <meta property="og:video:url" value={fullVideoURL} />
           <meta property="og:video:secure_url" value={fullVideoURL} />
-          <meta property="og:video:type" content="video/mp4" />
+          <meta property="og:video:type" content={props.mimeType} />
           <meta property="og:video:width" content="1280" />
           <meta property="og:video:height" content="720" />
         </Head >
@@ -266,16 +268,17 @@ export const getServerSideProps = async (ctx: NextPageContext): Promise<Props<Wa
     return redirectTo404();
   }
 
+  const mimeType = mime.lookup(selectedClip.name);
   // if clip requires auth, check auth status
   if (selectedClip.requireAuth) {
     if (authStatus === AuthStatus.authenticated)
-      return { props: { selectedClip, currentURL, authStatus } };
+      return { props: { selectedClip, currentURL, authStatus, mimeType } };
     else
       return redirectToLogin(ctx);
   }
 
   // if no auth required
-  return { props: { selectedClip, currentURL, authStatus } };
+  return { props: { selectedClip, currentURL, authStatus, mimeType } };
 };
 
 export default WatchPage;
