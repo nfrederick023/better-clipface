@@ -6,9 +6,9 @@ import * as mime from "mime-types";
 
 import { Request, Response } from "express";
 
+import { Clip } from "../../../utils/types";
 import { NodeHeaders } from "next/dist/server/web/types";
-import { Video } from "../../../utils/interfaces";
-import { getState } from "../../../utils/state";
+import { getClipList } from "../../../utils/storage";
 import { isTokenValid } from "../../../utils/auth";
 import config from "config";
 import fs from "fs";
@@ -18,9 +18,10 @@ const CLIPS_PATH: string = config.get("clips_path");
 
 const getVideoByID = async (req: Request, res: Response): Promise<void> => {
 
-  const clipId = req.query.id;
-  const state = await getState();
-  const video: Video | undefined = state.find((clip: Video) => { return clip.id === clipId; });
+  const getID = req.query.id as string;
+  const clipId: string = getID.split(".")[0];
+  const state = await getClipList();
+  const video: Clip | undefined = state.find((clip: Clip) => { return clip.id === clipId; });
 
   if (video) {
     const clipPath = path.join(CLIPS_PATH, video.name);
@@ -37,8 +38,10 @@ const getVideoByID = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    serveVideo(req, res, clipPath);
+    res.writeHead(200, { "Content-Type": "video/mp4", "Content-disposition": `attachment; filename=${video.name}` });
+    fs.createReadStream(`${CLIPS_PATH}/${video.name}`).pipe(res);
     return;
+    //serveVideo(req, res, clipPath);
   }
 
   res.statusCode = 404;

@@ -2,13 +2,13 @@
  * Index page - shows a list of available clips
  */
 
-import { AuthStatus, LinkTypes, Props, PropsWithAuth, SortTypes, Video } from "../utils/interfaces";
+import { AuthStatus, Clip, LinkTypes, Props, PropsWithAuth, SortTypes } from "../utils/types";
 import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
 import { NextPageContext, Redirect } from "next";
 import { redirectTo401, redirectToLogin } from "../utils/redirects";
 import CopyClipLink, { CopyTextContainer } from "../components/CopyLink";
 
-import { booleanify } from "../utils/booleanify";
+import { booleanify } from "../utils/utils";
 import { getAuthStatus } from "../utils/auth";
 import { toNumber } from "lodash";
 import { useCookies } from "react-cookie";
@@ -19,7 +19,7 @@ import Router from "next/router";
 import TimeAgo from "react-timeago";
 import config from "config";
 import debounce from "lodash/debounce";
-import listClips from "../utils/listClips";
+import listClips from "../utils/storage";
 import prettyBytes from "pretty-bytes";
 import styled from "styled-components";
 
@@ -74,7 +74,7 @@ const SmallButton = styled.button`
 `;
 
 interface IndexPageBase extends PropsWithAuth {
-  allClips: Video[];
+  allClips: Clip[];
 }
 
 interface IndexPage extends IndexPageBase {
@@ -84,7 +84,7 @@ interface IndexPage extends IndexPageBase {
 
 const Index: FC<IndexPage> = ({ authStatus, allClips, currentPage, setCurrentPage }) => {
   const [filter, setFilter] = useState("");
-  const [clips, setClips] = useState<Video[]>([]);
+  const [clips, setClips] = useState<Clip[]>([]);
   const [sort, setSort] = useState(SortTypes.saved);
   const [isAscending, setIsAscending] = useState(true);
   const [isOnlyFavorites, setIsOnlyFavorites] = useState(false);
@@ -187,7 +187,7 @@ const Index: FC<IndexPage> = ({ authStatus, allClips, currentPage, setCurrentPag
     setCookies("clipsPerPage", newClipsPerPage < 1 ? 0 : newClipsPerPage, { path: "/" });
   };
 
-  const updateVideoList = (selectedClip: Video): void => {
+  const updateVideoList = (selectedClip: Clip): void => {
     const newVideoList = allClips.filter((clip) => { return clip.id !== selectedClip.id; });
     newVideoList.push(selectedClip);
     setIntialClipList(newVideoList);

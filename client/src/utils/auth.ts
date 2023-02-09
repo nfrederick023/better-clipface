@@ -6,7 +6,7 @@
 
 import { randomBytes, scryptSync } from "crypto";
 
-import { AuthStatus } from "./interfaces";
+import { AuthStatus } from "./types";
 import { NextPageContext } from "next";
 import { Request } from "express";
 import config from "config";

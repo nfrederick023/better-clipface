@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { LinkTypes, Video } from "../utils/interfaces";
+import { LinkTypes, Video } from "../utils/types";
 
 import React from "react";
 import Tippy from "@tippyjs/react";

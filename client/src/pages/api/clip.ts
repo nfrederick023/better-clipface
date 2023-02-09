@@ -5,7 +5,7 @@
 import { Request, Response } from "express";
 
 import { isTokenValid } from "../../utils/auth";
-import { updateVideo } from "../../utils/state";
+import { updateClip } from "../../utils/state";
 
 const useAuth = (async (req: Request, res: Response): Promise<void> => {
 
@@ -16,7 +16,7 @@ const useAuth = (async (req: Request, res: Response): Promise<void> => {
   }
 
   if (req.method === "PUT") {
-    const body = await updateVideo(req.body);
+    const body = await updateClip(req.body);
 
     if (body) {
       res.statusCode = 200;

@@ -3,9 +3,9 @@
  */
 
 import { Request, Response } from "express";
-import { getState, updateVideo } from "../../../utils/state";
 
-import { Video } from "../../../utils/interfaces";
+import { Clip } from "../../../utils/types";
+import { getClipList } from "../../../utils/storage";
 import { isTokenValid } from "../../../utils/auth";
 import config from "config";
 import fs from "fs";
@@ -13,8 +13,9 @@ import fs from "fs";
 const useAuth = (async (req: Request, res: Response): Promise<void> => {
 
   const clipId = req.query.id;
-  const state = await getState();
-  const video: Video | undefined = state.find((clip: Video) => { return clip.id === clipId; });
+
+  const state = await getClipList();
+  const video: Clip | undefined = state.find((clip: Clip) => { return clip.id === clipId; });
 
   if (video && req.method === "GET") {
     if (video.requireAuth && !(await isTokenValid(req))) {
@@ -24,7 +25,7 @@ const useAuth = (async (req: Request, res: Response): Promise<void> => {
     }
 
     const CLIPS_PATH: string | undefined = config.get("clips_path");
-    res.writeHead(200, { "Content-Type": "image/jpeg" });
+    res.writeHead(200, { "Content-Type": "image/jpeg", "Content-disposition": `attachment; filename=${video.id}.jpeg` });
     fs.createReadStream(`${CLIPS_PATH}/assets/thumbnails/${clipId}.jpg`).pipe(res);
     return;
   }

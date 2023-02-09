@@ -1,7 +1,7 @@
 import { FC, ReactNode } from "react";
 
 import { Helmet } from "react-helmet";
-import { booleanify } from "../utils/booleanify";
+import { booleanify } from "../utils/utils";
 import { useCookies } from "react-cookie";
 import { useRouter } from "next/router";
 import Container from "./Container";

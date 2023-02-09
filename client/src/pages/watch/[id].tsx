@@ -5,14 +5,14 @@
 
 import * as mime from "mime-types";
 
-import { AuthStatus, LinkTypes, NextRedirect, Props, PropsWithAuth, Video } from "../../utils/interfaces";
+import { AuthStatus, Clip, LinkTypes, NextRedirect, Props, PropsWithAuth } from "../../utils/types";
 import { redirectTo404, redirectToLogin } from "../../utils/redirects";
 import React, { FC, MutableRefObject, useEffect, useRef, useState } from "react";
 
 import { NextPageContext } from "next";
-import { booleanify } from "../../utils/booleanify";
+import { booleanify } from "../../utils/utils";
 import { getAuthStatus } from "../../utils/auth";
-import { getState } from "../../utils/state";
+import { getClipList } from "../../utils/storage";
 import { useCookies } from "react-cookie";
 import { useRouter } from "next/router";
 import Container from "../../components/Container";
@@ -99,7 +99,7 @@ const VideoDescription = styled.div`
 const StyledMeta = styled.meta`` as any;
 
 interface WatchPageProps extends PropsWithAuth {
-  selectedClip: Video;
+  selectedClip: Clip;
   mimeType: string | false;
   currentURL: string;
 }
@@ -128,7 +128,7 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
     router.push("/");
   };
 
-  const videoSrc = "/api/watch/" + encodeURIComponent(clip.id);
+  const videoSrc = "/api/watch/" + encodeURIComponent(clip.id) + ".mp4";
   const thumbSrc = "/api/thumb/" + encodeURIComponent(clip.id);
   const currentURL = new URL(props.currentURL);
   const src = `${currentURL.protocol}//${currentURL.host}`;
@@ -169,12 +169,23 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
           <StyledMeta property="og:url" value={currentURL} />
           <StyledMeta property="og:title" value={props.selectedClip.name} />
           <StyledMeta property="og:image" content={fullThumbSrc} />
+          <StyledMeta property="og:image:secure_url" content={fullThumbSrc} />
+          <StyledMeta property="og:image:type" content="image/jpeg" />
+          <StyledMeta property="og:image:width" content="1280" />
+          <StyledMeta property="og:image:height" content="720" />
+          <StyledMeta property="og:description" value="na" />
           <StyledMeta property="og:video" value={fullVideoURL} />
           <StyledMeta property="og:video:url" value={fullVideoURL} />
           <StyledMeta property="og:video:secure_url" value={fullVideoURL} />
           <StyledMeta property="og:video:type" content={props.mimeType.toString()} />
           <StyledMeta property="og:video:width" content="1280" />
           <StyledMeta property="og:video:height" content="720" />
+          <StyledMeta name="twitter:card" content="player" />
+          <StyledMeta name="twitter:site" content="@streamable" />
+          <StyledMeta name="twitter:image" content={fullThumbSrc} />
+          <StyledMeta name="twitter:player:width" content="1280" />
+          <StyledMeta name="twitter:player:height" content="720" />
+          <StyledMeta name="twitter:player" content={currentURL} />
         </Head >
       </>
 
@@ -256,8 +267,8 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
 
 export const getServerSideProps = async (ctx: NextPageContext): Promise<Props<WatchPageProps> | NextRedirect> => {
   const clipId: string = ctx.query.id as string;
-  const state = await getState();
-  const selectedClip = state.find((clip: Video) => { return clip.id === clipId; });
+  const state = await getClipList();
+  const selectedClip = state.find((clip: Clip) => { return clip.id === clipId; });
   const authStatus = await getAuthStatus(ctx);
   //@ts-ignore
   const protocol = ctx.req?.headers?.["x-forwarded-proto"] || "http";

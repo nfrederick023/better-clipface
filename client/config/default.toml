@@ -3,7 +3,7 @@
 #
 # Each option is documented in README.md
 #
-clips_path = "/clips"
+clips_path = "/snacksable"
 user_password = "test"
 secure_cookies = true
 private_clips_list = true

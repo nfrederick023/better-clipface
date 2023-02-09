@@ -2,7 +2,7 @@
  * Login page
  */
 
-import { AuthResponse, AuthStatus, NextRedirect, Props } from "../utils/interfaces";
+import { AuthResponse, AuthStatus, NextRedirect, Props } from "../utils/types";
 import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
 import { ParsedUrl, parseUrl } from "next/dist/shared/lib/router/utils/parse-url";
 
