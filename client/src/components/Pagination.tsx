@@ -29,35 +29,35 @@ const ClickableTag = styled.span`
 export interface PaginationProps {
   totalPages: number,
   currentPage: number,
-  clipsPerPage: number,
+  videosPerPage: number,
   showFavoritesButton: boolean,
   isOnlyFavorites?: boolean,
-  totalClips: number,
+  totalVideos: number,
   showLabel: boolean,
   onChangePage: (newPageNumber: number) => void,
   setIsOnlyFavorite?: Dispatch<SetStateAction<boolean>>,
-  onChangeClipsPerPage: (newClipsPerPage: number) => void
+  onChangeVideosPerPage: (newVideosPerPage: number) => void
 }
 
-const Pagination: FC<PaginationProps> = ({ totalPages, currentPage, showFavoritesButton, isOnlyFavorites, clipsPerPage, setIsOnlyFavorite, onChangePage, onChangeClipsPerPage, showLabel }) => {
+const Pagination: FC<PaginationProps> = ({ totalPages, currentPage, showFavoritesButton, isOnlyFavorites, videosPerPage, setIsOnlyFavorite, onChangePage, onChangeVideosPerPage, showLabel }) => {
 
-  const [clipsPerPageDisplay, setclipsPerPageDisplay] = useState(clipsPerPage);
+  const [videosPerPageDisplay, setvideosPerPageDisplay] = useState(videosPerPage);
   let showAsModal = false;
 
   useEffect(() => {
-    if (!clipsPerPage) {
-      setclipsPerPageDisplay(0);
+    if (!videosPerPage) {
+      setvideosPerPageDisplay(0);
     } else {
-      setclipsPerPageDisplay(clipsPerPage);
+      setvideosPerPageDisplay(videosPerPage);
     }
     showAsModal = window.innerWidth < 768;
-  }, [clipsPerPage]);
+  }, [videosPerPage]);
 
   const onFirstPage = currentPage === 0;
   const onLastPage = currentPage === totalPages - 1;
 
-  const changeClipsPerPage = (newNumber: number): void => {
-    onChangeClipsPerPage && onChangeClipsPerPage(newNumber);
+  const changeVideosPerPage = (newNumber: number): void => {
+    onChangeVideosPerPage && onChangeVideosPerPage(newNumber);
   };
 
   return (
@@ -109,14 +109,14 @@ const Pagination: FC<PaginationProps> = ({ totalPages, currentPage, showFavorite
               >
 
                 <div className="dropdown-content">
-                  <div className="dropdown-item">Clips per page:</div>
+                  <div className="dropdown-item">Videos per page:</div>
                   <div className="dropdown-item">
                     <input
                       className="input is-small"
                       type="number"
-                      value={clipsPerPageDisplay}
+                      value={videosPerPageDisplay}
                       onChange={(event): void =>
-                        changeClipsPerPage(Number(event.target.value))
+                        changeVideosPerPage(Number(event.target.value))
                       }
                     />
                   </div>
@@ -124,31 +124,31 @@ const Pagination: FC<PaginationProps> = ({ totalPages, currentPage, showFavorite
                     <div className="tags" style={{ flexWrap: "nowrap" }}>
                       <ClickableTag
                         className="tag is-info"
-                        onClick={(): void => changeClipsPerPage(20)}
+                        onClick={(): void => changeVideosPerPage(20)}
                       >
                         20
                       </ClickableTag>
                       <ClickableTag
                         className="tag is-info"
-                        onClick={(): void => changeClipsPerPage(40)}
+                        onClick={(): void => changeVideosPerPage(40)}
                       >
                         40
                       </ClickableTag>
                       <ClickableTag
                         className="tag is-primary"
-                        onClick={(): void => changeClipsPerPage(80)}
+                        onClick={(): void => changeVideosPerPage(80)}
                       >
                         80
                       </ClickableTag>
                       <ClickableTag
                         className="tag is-warning"
-                        onClick={(): void => changeClipsPerPage(150)}
+                        onClick={(): void => changeVideosPerPage(150)}
                       >
                         150
                       </ClickableTag>
                       <ClickableTag
                         className="tag is-danger"
-                        onClick={(): void => changeClipsPerPage(300)}
+                        onClick={(): void => changeVideosPerPage(300)}
                       >
                         300
                       </ClickableTag>

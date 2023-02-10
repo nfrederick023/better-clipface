@@ -9,7 +9,7 @@ const CenterDiv = styled.div`
 
 const NotFound: FC = () => {
   return (
-    <CenterDiv>404 - Clip Not Found </CenterDiv>
+    <CenterDiv>404 - Video Not Found </CenterDiv>
   );
 };
 

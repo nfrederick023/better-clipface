@@ -84,7 +84,7 @@ interface LayoutProps {
   hasAuth: boolean
 }
 
-const ClipfaceLayout: FC<LayoutProps> = ({ children, hasAuth }) => {
+const Layout: FC<LayoutProps> = ({ children, hasAuth }) => {
   const router = useRouter();
   const [cookies, setCookies] = useCookies(["isDarkMode", "authToken"]);
 
@@ -169,4 +169,4 @@ const ClipfaceLayout: FC<LayoutProps> = ({ children, hasAuth }) => {
   );
 };
 
-export default ClipfaceLayout;
+export default Layout;

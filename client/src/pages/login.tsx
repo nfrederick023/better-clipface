@@ -8,12 +8,12 @@ import { ParsedUrl, parseUrl } from "next/dist/shared/lib/router/utils/parse-url
 
 import { NextPageContext } from "next/types";
 import { getAuthStatus } from "../utils/auth";
+import { hasUserPassword } from "../utils/config";
 import { redirectToIndex } from "../utils/redirects";
 import { useCookies } from "react-cookie";
 import { useRouter } from "next/router";
 import Container from "../components/Container";
 import React from "react";
-import config from "config";
 import styled from "styled-components";
 
 const LoginBox = styled.div`
@@ -140,7 +140,7 @@ export const login = async (password: string): Promise<AuthResponse | undefined>
 export const getServerSideProps = async (ctx: NextPageContext): Promise<NextRedirect | Props<Record<string, never>>> => {
   const authStatus = await getAuthStatus(ctx);
   // if no user authentication is configured or already authenticated forward to the index page
-  if (!config.get("user_password") || authStatus === AuthStatus.authenticated) {
+  if (!hasUserPassword() || authStatus === AuthStatus.authenticated) {
     return redirectToIndex();
   }
 

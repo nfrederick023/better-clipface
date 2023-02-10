@@ -4,37 +4,34 @@
 
 import { Request, Response } from "express";
 
+import { getUserPassword, hasUserPassword } from "../../utils/config";
 import { hashPassword } from "../../utils/auth";
-import config from "config";
 
-const login = async (req: Request, res: Response): Promise<undefined> => {
-  // Only POST is allowed on this route
+const login = async (req: Request, res: Response): Promise<void> => {
+
   if (req.method !== "POST") {
     res.statusCode = 405;
     res.end();
     return;
   }
-  if (!config.get("user_password")) {
+
+  const userPassword = getUserPassword();
+
+  if (!hasUserPassword()) {
     res.statusCode = 400;
-    res.end("User authentication not configured\n");
+    res.end("User authentication not configured!");
     return;
   }
 
-  const userPassword: string = config.get("user_password");
-
-  if (req.body && "password" in req.body) {
-    if (userPassword === req.body["password"]) {
-
-      const hashedPassword = await hashPassword(userPassword);
-      res.statusCode = 200;
-      res.end(JSON.stringify({ authToken: hashedPassword }));
-      return;
-
-    }
+  if (req.body && "password" in req.body && userPassword === req.body["password"] && userPassword) {
+    const hashedPassword = await hashPassword(userPassword);
+    res.statusCode = 200;
+    res.end(JSON.stringify({ authToken: hashedPassword }));
+    return;
   }
 
-  res.statusCode = 400;
-  res.end("Invalid password\n");
+  res.statusCode = 401;
+  res.end("Login Failed!");
   return;
 };
 

@@ -1,30 +1,30 @@
 /*
- * API route for downloading clips by name
+ * API route for downloading videos by name
  */
 
 import * as mime from "mime-types";
 
-import { Request, Response } from "express";
-
-import { Clip } from "../../../utils/types";
+import { NextApiRequest, NextApiResponse } from "next";
 import { NodeHeaders } from "next/dist/server/web/types";
-import { getClipList } from "../../../utils/storage";
+import { Video } from "../../../utils/types";
+import { getVideoList } from "../../../utils/config";
 import { isTokenValid } from "../../../utils/auth";
-import config from "config";
 import fs from "fs";
-import path from "path";
 
-const CLIPS_PATH: string = config.get("clips_path");
-
-const getVideoByID = async (req: Request, res: Response): Promise<void> => {
+const getVideoByID = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
 
   const getID = req.query.id as string;
-  const clipId: string = getID.split(".")[0];
-  const state = await getClipList();
-  const video: Clip | undefined = state.find((clip: Clip) => { return clip.id === clipId; });
+  const videoId: string = getID.split(".")[0];
+  const videoList = await getVideoList();
+  const video: Video | undefined = videoList.find((video: Video) => { return video.id === videoId; });
+
+  if (req.method !== "GET") {
+    res.statusCode = 405;
+    res.end();
+    return;
+  }
 
   if (video) {
-    const clipPath = path.join(CLIPS_PATH, video.name);
 
     if (video.requireAuth && !(await isTokenValid(req))) {
       res.statusCode = 401;
@@ -32,16 +32,14 @@ const getVideoByID = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    if (!fs.existsSync(clipPath)) {
+    if (!fs.existsSync(video.filePath)) {
       res.statusCode = 404;
       res.end(JSON.stringify("Video not found in file path!"));
       return;
     }
 
-    res.writeHead(200, { "Content-Type": "video/mp4", "Content-disposition": `attachment; filename=${video.name}` });
-    fs.createReadStream(`${CLIPS_PATH}/${video.name}`).pipe(res);
+    serveVideo(req, res, video.filePath);
     return;
-    //serveVideo(req, res, clipPath);
   }
 
   res.statusCode = 404;
@@ -54,7 +52,7 @@ const getVideoByID = async (req: Request, res: Response): Promise<void> => {
  *
  * Source: https://betterprogramming.pub/video-stream-with-node-js-and-html5-320b3191a6b6
  */
-const serveVideo = (req: Request, res: Response, videoPath: string): void => {
+const serveVideo = (req: NextApiRequest, res: NextApiResponse, videoPath: string): void => {
   const stat = fs.statSync(videoPath);
   const fileSize = stat.size;
   const range = req.headers.range;

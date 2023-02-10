@@ -1,37 +1,49 @@
 /*
- * API route for downloading clips by name
+ * API route for downloading videos by name
  */
 
-import { Request, Response } from "express";
-
-import { Clip } from "../../../utils/types";
-import { getClipList } from "../../../utils/storage";
+import { NextApiRequest, NextApiResponse } from "next";
+import { Video } from "../../../utils/types";
+import { getThumbnailsPath, getVideoList } from "../../../utils/config";
 import { isTokenValid } from "../../../utils/auth";
-import config from "config";
 import fs from "fs";
 
-const useAuth = (async (req: Request, res: Response): Promise<void> => {
+const useAuth = (async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
 
-  const clipId = req.query.id;
+  const videoId = req.query.id;
 
-  const state = await getClipList();
-  const video: Clip | undefined = state.find((clip: Clip) => { return clip.id === clipId; });
+  const videoList = await getVideoList();
+  const video: Video | undefined = videoList.find((video: Video) => { return video.id === videoId; });
 
-  if (video && req.method === "GET") {
-    if (video.requireAuth && !(await isTokenValid(req))) {
-      res.statusCode = 401;
-      res.end(JSON.stringify("Unauthorized"));
-      return;
-    }
-
-    const CLIPS_PATH: string | undefined = config.get("clips_path");
-    res.writeHead(200, { "Content-Type": "image/jpeg", "Content-disposition": `attachment; filename=${video.id}.jpeg` });
-    fs.createReadStream(`${CLIPS_PATH}/assets/thumbnails/${clipId}.jpg`).pipe(res);
+  if (req.method !== "GET") {
+    res.statusCode = 405;
+    res.end();
     return;
   }
 
-  res.statusCode = 404;
-  res.end();
+  if (!video) {
+    res.statusCode = 404;
+    res.end(JSON.stringify("Could not find the video associated with this ID!"));
+    return;
+  }
+
+  if (video.requireAuth && !(await isTokenValid(req))) {
+    res.statusCode = 401;
+    res.end(JSON.stringify("Unauthorized"));
+    return;
+  }
+
+  if (!fs.existsSync(video.thumbnailPath)) {
+    res.statusCode = 404;
+    res.end(JSON.stringify("Thumbnail not found in file path!"));
+    return;
+  }
+
+  res.writeHead(200, { "Content-Type": "image/jpeg", "Content-disposition": `attachment; filename=${video.name}.jpeg` });
+  fs.createReadStream(`${await getThumbnailsPath()}${video.name}.jpg`).pipe(res);
+  return;
+
+
 });
 
 export default useAuth;

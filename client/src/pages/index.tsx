@@ -1,15 +1,16 @@
 /*
- * Index page - shows a list of available clips
+ * Index page - shows a list of available videos
  */
 
-import { AuthStatus, Clip, LinkTypes, Props, PropsWithAuth, SortTypes } from "../utils/types";
+import { AuthStatus, LinkTypes, Props, PropsWithAuth, SortTypes, Video } from "../utils/types";
 import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
 import { NextPageContext, Redirect } from "next";
 import { redirectTo401, redirectToLogin } from "../utils/redirects";
-import CopyClipLink, { CopyTextContainer } from "../components/CopyLink";
+import CopyVideoLink, { CopyTextContainer } from "../components/CopyLink";
 
-import { booleanify } from "../utils/utils";
 import { getAuthStatus } from "../utils/auth";
+import { getPrivateLibrary, hasUserPassword } from "../utils/config";
+import { listVideos } from "../utils/listVideos";
 import { toNumber } from "lodash";
 import { useCookies } from "react-cookie";
 import Container from "../components/Container";
@@ -17,9 +18,7 @@ import Pagination from "../components/Pagination";
 import React from "react";
 import Router from "next/router";
 import TimeAgo from "react-timeago";
-import config from "config";
 import debounce from "lodash/debounce";
-import listClips from "../utils/storage";
 import prettyBytes from "pretty-bytes";
 import styled from "styled-components";
 
@@ -74,7 +73,7 @@ const SmallButton = styled.button`
 `;
 
 interface IndexPageBase extends PropsWithAuth {
-  allClips: Clip[];
+  allVideos: Video[];
 }
 
 interface IndexPage extends IndexPageBase {
@@ -82,47 +81,47 @@ interface IndexPage extends IndexPageBase {
   setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const Index: FC<IndexPage> = ({ authStatus, allClips, currentPage, setCurrentPage }) => {
+const Index: FC<IndexPage> = ({ authStatus, allVideos, currentPage, setCurrentPage }) => {
   const [filter, setFilter] = useState("");
-  const [clips, setClips] = useState<Clip[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
   const [sort, setSort] = useState(SortTypes.saved);
   const [isAscending, setIsAscending] = useState(true);
   const [isOnlyFavorites, setIsOnlyFavorites] = useState(false);
-  const [totalClipCount, setTotalClipCount] = useState(0);
+  const [totalVideoCount, setTotalVideoCount] = useState(0);
   const [pageCount, setPageCount] = useState(0);
-  const [cookies, setCookies] = useCookies(["clipsPerPage", "isDarkMode"]);
-  const [intialClipList, setIntialClipList] = useState(allClips);
+  const [cookies, setCookies] = useCookies(["videosPerPage", "isDarkMode"]);
+  const [intialVideoList, setIntialVideoList] = useState(allVideos);
   const filterBox = useRef() as MutableRefObject<HTMLInputElement>;
 
   // Focus filter box on load
   useEffect(() => {
     updatePage();
-  }, [sort, currentPage, filter, isAscending, intialClipList, cookies, isOnlyFavorites]);
+  }, [sort, currentPage, filter, isAscending, intialVideoList, cookies, isOnlyFavorites]);
 
   const updatePage = (): void => {
-    const clipsPerPage = toNumber(cookies.clipsPerPage);
-    let sortedClips;
+    const videosPerPage = toNumber(cookies.videosPerPage);
+    let sortedVideos;
 
-    // get sorted clips list
-    sortedClips = Object.values(intialClipList).sort((a, b) => {
+    // get sorted videos list
+    sortedVideos = Object.values(intialVideoList).sort((a, b) => {
       return (a[SortTypes[sort]] as number) - (b[SortTypes[sort]] as number);
     });
 
     if (isAscending) {
-      sortedClips = sortedClips.reverse();
+      sortedVideos = sortedVideos.reverse();
     }
 
     //apply any filters
     if (filter) {
-      sortedClips = sortedClips.filter((clip) => clip.name.toLowerCase().includes(filter));
+      sortedVideos = sortedVideos.filter((video) => video.name.toLowerCase().includes(filter));
     }
 
     if (isOnlyFavorites) {
-      sortedClips = sortedClips.filter(clip => clip.isFavorite);
+      sortedVideos = sortedVideos.filter(video => video.isFavorite);
     }
 
-    setTotalClipCount(sortedClips.length);
-    const pageCount = Math.ceil(sortedClips.length / clipsPerPage);
+    setTotalVideoCount(sortedVideos.length);
+    const pageCount = Math.ceil(sortedVideos.length / videosPerPage);
 
     if (isFinite(pageCount)) {
       setPageCount(pageCount);
@@ -134,7 +133,7 @@ const Index: FC<IndexPage> = ({ authStatus, allClips, currentPage, setCurrentPag
       setCurrentPage(0);
     }
 
-    if (currentPage === -1 && sortedClips.length) {
+    if (currentPage === -1 && sortedVideos.length) {
       setCurrentPage(0);
     }
 
@@ -143,13 +142,13 @@ const Index: FC<IndexPage> = ({ authStatus, allClips, currentPage, setCurrentPag
     }
 
     //apply any pagination
-    sortedClips = sortedClips.slice(
-      currentPage * clipsPerPage,
-      currentPage * clipsPerPage + clipsPerPage
+    sortedVideos = sortedVideos.slice(
+      currentPage * videosPerPage,
+      currentPage * videosPerPage + videosPerPage
     );
 
-    //set pages clips
-    setClips(sortedClips);
+    //set pages videos
+    setVideos(sortedVideos);
   };
 
   const changeSort = (newSort: SortTypes): void => {
@@ -179,18 +178,18 @@ const Index: FC<IndexPage> = ({ authStatus, allClips, currentPage, setCurrentPag
     setFilter("");
   };
 
-  const handleLinkClick = (clipId: string): void => {
-    Router.push(`/watch/${clipId}`);
+  const handleLinkClick = (videoId: string): void => {
+    Router.push(`/watch/${videoId}`);
   };
 
-  const handleChangeClipsPerPage = (newClipsPerPage: number): void => {
-    setCookies("clipsPerPage", newClipsPerPage < 1 ? 0 : newClipsPerPage, { path: "/" });
+  const handleChangeVideosPerPage = (newVideosPerPage: number): void => {
+    setCookies("videosPerPage", newVideosPerPage < 1 ? 0 : newVideosPerPage, { path: "/" });
   };
 
-  const updateVideoList = (selectedClip: Clip): void => {
-    const newVideoList = allClips.filter((clip) => { return clip.id !== selectedClip.id; });
-    newVideoList.push(selectedClip);
-    setIntialClipList(newVideoList);
+  const updateVideoList = (selectedVideo: Video): void => {
+    const newVideoList = allVideos.filter((video) => { return video.id !== selectedVideo.id; });
+    newVideoList.push(selectedVideo);
+    setIntialVideoList(newVideoList);
   };
 
   return (
@@ -218,13 +217,13 @@ const Index: FC<IndexPage> = ({ authStatus, allClips, currentPage, setCurrentPag
       <Pagination
         currentPage={currentPage}
         totalPages={pageCount}
-        totalClips={totalClipCount}
+        totalVideos={totalVideoCount}
         showFavoritesButton={true}
         isOnlyFavorites={isOnlyFavorites}
-        clipsPerPage={toNumber(cookies.clipsPerPage)}
+        videosPerPage={toNumber(cookies.videosPerPage)}
         setIsOnlyFavorite={setIsOnlyFavorites}
         onChangePage={(pageNumber): void => changePage(pageNumber)}
-        onChangeClipsPerPage={handleChangeClipsPerPage}
+        onChangeVideosPerPage={handleChangeVideosPerPage}
         showLabel
       />
 
@@ -250,44 +249,44 @@ const Index: FC<IndexPage> = ({ authStatus, allClips, currentPage, setCurrentPag
         </thead>
 
         <tbody>
-          {clips.map((clip) => (
+          {videos.map((video) => (
             <LinkRow
-              key={clip.name}
+              key={video.fileName}
               onClick={(): void => {
-                handleLinkClick(clip.id);
+                handleLinkClick(video.id);
               }}
             >
               <td>
-                <TimeAgo date={clip.created} />
+                <TimeAgo date={video.created} />
               </td>
               <td>
-                <TimeAgo date={clip.saved} />
+                <TimeAgo date={video.saved} />
               </td>
-              <td>{prettyBytes(clip.size)}</td>
+              <td>{prettyBytes(video.size)}</td>
               <td>
-                {clip.title || clip.name.split(".").slice(0, -1).join(".")}
+                {video.name}
 
                 <RowButtons>
 
                   {authStatus === AuthStatus.authenticated && (
                     // There's no point in showing the "Copy public link"
-                    // button if Clipface is not password protected
+                    // button if Videoface is not password protected
                     <>
                       {
-                        clip.requireAuth ?
-                          <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText={true} linkType={LinkTypes.privateLink} /> :
-                          <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText={true} linkType={LinkTypes.publicLink} />
+                        video.requireAuth ?
+                          <CopyVideoLink video={video} updateVideoList={updateVideoList} noText={true} linkType={LinkTypes.privateLink} /> :
+                          <CopyVideoLink video={video} updateVideoList={updateVideoList} noText={true} linkType={LinkTypes.publicLink} />
                       }
                       {
-                        clip.isFavorite ?
-                          <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText={true} linkType={LinkTypes.favoriteLink} /> :
-                          <CopyClipLink clip={clip} updateVideoList={updateVideoList} noText={true} linkType={LinkTypes.unfavoriteLink} />
+                        video.isFavorite ?
+                          <CopyVideoLink video={video} updateVideoList={updateVideoList} noText={true} linkType={LinkTypes.favoriteLink} /> :
+                          <CopyVideoLink video={video} updateVideoList={updateVideoList} noText={true} linkType={LinkTypes.unfavoriteLink} />
                       }
                     </>
                   )}
                   {authStatus === AuthStatus.notAuthenticated && (
                     <>
-                      {clip.isFavorite && (
+                      {video.isFavorite && (
                         <SmallButton
                           className={"button is-small"}
                           onClick={(e): void => {
@@ -299,7 +298,7 @@ const Index: FC<IndexPage> = ({ authStatus, allClips, currentPage, setCurrentPag
                       )}
                     </>
                   )}
-                  <CopyClipLink clip={clip} noText={true} linkType={LinkTypes.copyLink} />
+                  <CopyVideoLink video={video} noText={true} linkType={LinkTypes.copyLink} />
 
                 </RowButtons>
               </td>
@@ -308,8 +307,8 @@ const Index: FC<IndexPage> = ({ authStatus, allClips, currentPage, setCurrentPag
         </tbody>
       </table>
 
-      {clips.length === 0 && (
-        <NoVideosPlaceholder><div className={cookies.isDarkMode === "true" ? "is-dark" : ""}>No clips Found</div></NoVideosPlaceholder>
+      {videos.length === 0 && (
+        <NoVideosPlaceholder><div className={cookies.isDarkMode === "true" ? "is-dark" : ""}>No videos Found</div></NoVideosPlaceholder>
       )}
 
       <Pagination
@@ -318,9 +317,9 @@ const Index: FC<IndexPage> = ({ authStatus, allClips, currentPage, setCurrentPag
         totalPages={pageCount}
         showFavoritesButton={false}
         isOnlyFavorites={isOnlyFavorites}
-        totalClips={totalClipCount}
-        clipsPerPage={toNumber(cookies.clipsPerPage)}
-        onChangeClipsPerPage={handleChangeClipsPerPage}
+        totalVideos={totalVideoCount}
+        videosPerPage={toNumber(cookies.videosPerPage)}
+        onChangeVideosPerPage={handleChangeVideosPerPage}
         onChangePage={(newPageNumber): void => setCurrentPage(newPageNumber)}
       />
 
@@ -330,18 +329,18 @@ const Index: FC<IndexPage> = ({ authStatus, allClips, currentPage, setCurrentPag
 
 export const getServerSideProps = async (ctx: NextPageContext): Promise<Props<IndexPageBase> | { redirect: Redirect }> => {
   const authStatus = await getAuthStatus(ctx);
-  let allClips = await listClips();
+  let allVideos = await listVideos();
 
   if (authStatus === AuthStatus.notAuthenticated) {
-    if (booleanify(config.get("private_clips_list")))
-      if (config.get("user_password")) {
+    if (getPrivateLibrary())
+      if (hasUserPassword()) {
         return redirectToLogin(ctx);
       } else
         return redirectTo401();
     else
-      allClips = allClips.filter(clip => !clip.requireAuth);
+      allVideos = allVideos.filter(video => !video.requireAuth);
   }
-  return { props: { allClips, authStatus } };
+  return { props: { allVideos, authStatus } };
 };
 
 export default Index;

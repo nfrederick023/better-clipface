@@ -1,19 +1,17 @@
 /* eslint-disable */
 const config = require("config");
 const fse = require("fs-extra");
-const path = require("path");
 
-// backs up state on startup
+// backs up video list on startup
 (async function main () {
-  try {
-    const CLIPS_PATH = config.get("clips_path");
-
-    if (await fse.pathExists(path.join(CLIPS_PATH, "/assets"))) {
-      const state = await fse.readJSON(path.join(CLIPS_PATH, "/assets/state.json"));
-      await fse.writeJSON(path.join(CLIPS_PATH, "/assets/state_backup.json"), state);
-    }
-  } catch (e) {
-    console.log("Error Backing Up State: " + e);
+  const assetsPath = config.get("app_path") + "/assets/";
+  const videoListPath = assetsPath + "video_list.json"
+  const backupDir = assetsPath + "backups/"
+  if (fse.existsSync(videoListPath)) {
+    const videoList = await fse.readJSON(videoListPath);
+    if (!fse.existsSync(backupDir))
+      await fse.mkdir(backupDir);
+    fse.writeJSON(backupDir + "video_list.json", videoList);
   }
 })();
 
@@ -21,7 +19,7 @@ module.exports = {
   publicRuntimeConfig: {
     // Will be available on both server and client
     pageTitle: config.get("page_title"),
-    hasAuth: !!config.get("user_password"),
+    hasAuth: !!(config.has("password") ? config.get("password") : undefined),
   },
   compiler: {
     // ssr and displayName are configured by default

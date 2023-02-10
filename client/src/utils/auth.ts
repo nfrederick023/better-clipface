@@ -1,23 +1,14 @@
-/**
- * Handles authentication
- *
- * This module should only be imported from server code.
- */
-
 import { randomBytes, scryptSync } from "crypto";
 
 import { AuthStatus } from "./types";
-import { NextPageContext } from "next";
-import { Request } from "express";
-import config from "config";
+import { NextApiRequest, NextPageContext } from "next";
+import { getUserPassword } from "./config";
 
 export const getAuthStatus = async (ctx: NextPageContext): Promise<AuthStatus> => {
 
-  if (!config.get("user_password"))
-    return AuthStatus.notAuthenticated;
 
-  const hasAuthToken = !!(ctx.req as Request | undefined)?.cookies?.authToken;
-  const isAuthTokenValid = await isTokenValid(ctx.req as Request);
+  const hasAuthToken = !!(ctx.req as NextApiRequest | undefined)?.cookies.authToken;
+  const isAuthTokenValid = await isTokenValid(ctx.req as NextApiRequest);
 
   if (hasAuthToken && !isAuthTokenValid && ctx.res) {
     ctx.res.setHeader("Set-Cookie", "authToken=; Max-Age=0");
@@ -30,18 +21,20 @@ export const getAuthStatus = async (ctx: NextPageContext): Promise<AuthStatus> =
   return AuthStatus.notAuthenticated;
 };
 
-export const isTokenValid = async (req: Request): Promise<boolean> => {
-  return await checkHashedPassword("default", req?.cookies?.authToken ?? "");
+export const isTokenValid = async (req: NextApiRequest): Promise<boolean> => {
+  return await checkHashedPassword("default", req.cookies.authToken ?? "");
 };
 
 export const checkHashedPassword = async (user: string, hashedPassword: string): Promise<boolean> => {
-  if (user !== "default") {
-    //throw "Logging in as non-default user is not yet supported";
+  const configPassword = getUserPassword();
+
+  if (!configPassword) {
+    return false;
   }
 
   const salt = hashedPassword.slice(64);
-  const serverPassword = scryptSync(config.get("user_password"), salt, 32).toString("hex") + salt;
-  return serverPassword === hashedPassword;
+  const hashedConfigPassword = scryptSync(configPassword, salt, 32).toString("hex") + salt;
+  return hashedConfigPassword === hashedPassword;
 };
 
 export const hashPassword = async (password: string): Promise<string> => {

@@ -15,13 +15,13 @@ export const CopyTextContainer = styled.span`
 `;
 
 export interface CopyLinkProps {
-  updateVideoList?: (clip: Video) => void,
-  clip: Video,
+  updateVideoList?: (video: Video) => void,
+  video: Video,
   noText: boolean,
   linkType: LinkTypes
 }
 
-const CopyLink: FC<CopyLinkProps> = ({ updateVideoList, clip, noText = false, linkType }) => {
+const CopyLink: FC<CopyLinkProps> = ({ updateVideoList, video, noText = false, linkType }) => {
   const [linkCopied, setLinkCopied] = useState(false);
   let popupContent = "";
   let hoverContent = "";
@@ -42,15 +42,16 @@ const CopyLink: FC<CopyLinkProps> = ({ updateVideoList, clip, noText = false, li
   if (linkType === LinkTypes.publicLink) {
     css = "private";
     popupContent = "Set to Public";
-    hoverContent = "Public";
-    htmlContent = "Public";
+    hoverContent = "Private";
+    htmlContent = "Private";
+
   }
 
   if (linkType === LinkTypes.privateLink) {
     css = "private";
     popupContent = "Set to Private";
-    hoverContent = "Private";
-    htmlContent = "Private";
+    hoverContent = "Public";
+    htmlContent = "Public";
   }
 
   if (linkType === LinkTypes.copyLink) {
@@ -73,35 +74,35 @@ const CopyLink: FC<CopyLinkProps> = ({ updateVideoList, clip, noText = false, li
     htmlContent = "Unfavorite";
   }
 
-  const updateNewClip = async (newClip: Video): Promise<void> => {
+  const updateNewVideo = async (newVideo: Video): Promise<void> => {
     if (updateVideoList) {
-      const updatedClip = await updateClip(newClip);
-      if (updatedClip.ok) {
-        updateVideoList(await updatedClip.json());
+      const updatedVideo = await updateVideo(newVideo);
+      if (updatedVideo.ok) {
+        updateVideoList(await updatedVideo.json());
         setLinkCopied(true);
       }
     }
   };
 
   const onClick = async (): Promise<void> => {
-    const clipID = clip.id;
+    const videoID = video.id;
     const baseURL = window.location.origin;
 
-    // If we're making a public link, we need to append a single clip
+    // If we're making a public link, we need to append a single video
     // authentication token
     if (linkType === LinkTypes.publicLink || linkType === LinkTypes.privateLink) {
-      clip.requireAuth = !clip.requireAuth;
-      updateNewClip(clip);
+      video.requireAuth = !video.requireAuth;
+      updateNewVideo(video);
     }
 
     if (linkType === LinkTypes.favoriteLink || linkType === LinkTypes.unfavoriteLink) {
-      clip.isFavorite = !clip.isFavorite;
-      updateNewClip(clip);
+      video.isFavorite = !video.isFavorite;
+      updateNewVideo(video);
     }
 
     if (linkType === LinkTypes.copyLink) {
       try {
-        await navigator.clipboard.writeText(baseURL + "/watch/" + clipID);
+        await navigator.clipboard.writeText(baseURL + "/watch/" + videoID);
         setLinkCopied(true);
       } catch (e) {
         alert("Failed to copy link!");
@@ -145,11 +146,11 @@ const CopyLink: FC<CopyLinkProps> = ({ updateVideoList, clip, noText = false, li
   );
 };
 
-const updateClip = async (clip: Video): Promise<Response> => {
-  const response = await fetch("/api/video", {
+const updateVideo = async (video: Video): Promise<Response> => {
+  const response = await fetch("/api/videoList", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(clip),
+    body: JSON.stringify(video),
   });
   return response;
 };

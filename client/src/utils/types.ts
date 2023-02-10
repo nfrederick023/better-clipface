@@ -1,13 +1,14 @@
 import { IncomingMessage } from "http";
 import { Redirect } from "next";
 
-export interface Clip {
+export interface Video {
+  fileName: string,
   name: string,
   size: number,
   saved: number,
   created: number,
-  title: string,
   filePath: string,
+  thumbnailPath: string,
   description: string,
   requireAuth: boolean,
   isFavorite: boolean,

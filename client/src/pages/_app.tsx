@@ -11,9 +11,8 @@ import { ReactElement, useState } from "react";
 import { AppContext } from "next/app";
 import { Request } from "express";
 import { createGlobalStyle } from "styled-components";
-import ClipfaceLayout from "../components/Layout";
+import Layout from "../components/Layout";
 import React from "react";
-import config from "config";
 import getConfig from "next/config";
 
 const { publicRuntimeConfig } = getConfig();
@@ -65,7 +64,7 @@ const MyApp: NextPage<MyAppProps> = ({ ...props }: MyAppProps): ReactElement => 
   };
   if (typeof props.allCookies?.theaterMode === "undefined") setCookies("theaterMode", false);
   if (typeof props.allCookies?.videoVolume === "undefined") setCookies("videoVolume", 1);
-  if (typeof props.allCookies?.clipsPerPage === "undefined") setCookies("clipsPerPage", 40);
+  if (typeof props.allCookies?.videosPerPage === "undefined") setCookies("videosPerPage", 40);
   if (typeof props.allCookies?.isDarkMode === "undefined") setCookies("isDarkMode", true);
   if (typeof props.allCookies?.authToken === "undefined") setCookies("authToken", "");
   return (
@@ -73,9 +72,9 @@ const MyApp: NextPage<MyAppProps> = ({ ...props }: MyAppProps): ReactElement => 
       <title>{publicRuntimeConfig.pageTitle}</title>
       <GlobalStyle />
       <CookiesProvider cookies={cookies}>
-        <ClipfaceLayout hasAuth={publicRuntimeConfig.hasAuth}>
+        <Layout hasAuth={publicRuntimeConfig.hasAuth}>
           <props.Component {...props.pageProps} currentPage={currentPage} setCurrentPage={setCurrentPage} />
-        </ClipfaceLayout>
+        </Layout>
       </CookiesProvider>
     </>
   );
