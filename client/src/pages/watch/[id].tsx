@@ -10,8 +10,8 @@ import React, { FC, MutableRefObject, useEffect, useRef, useState } from "react"
 
 import { NextPageContext } from "next";
 import { booleanify } from "../../utils/utils";
-import { getAuthStatus } from "../../utils/auth";
-import { listVideos } from "../../utils/listVideos";
+import { getAuthStatus } from "../../backend/auth";
+import { listVideos } from "../../backend/listVideos";
 import { useCookies } from "react-cookie";
 import { useRouter } from "next/router";
 import Container from "../../components/Container";

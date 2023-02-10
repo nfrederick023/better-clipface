@@ -4,8 +4,8 @@
 
 import { NextApiRequest, NextApiResponse } from "next";
 import { Video } from "../../../utils/types";
-import { getThumbnailsPath, getVideoList } from "../../../utils/config";
-import { isTokenValid } from "../../../utils/auth";
+import { getThumbnailsPath, getVideoList } from "../../../backend/config";
+import { isTokenValid } from "../../../backend/auth";
 import fs from "fs";
 
 const useAuth = (async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {

@@ -7,8 +7,8 @@ import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
 import { ParsedUrl, parseUrl } from "next/dist/shared/lib/router/utils/parse-url";
 
 import { NextPageContext } from "next/types";
-import { getAuthStatus } from "../utils/auth";
-import { hasUserPassword } from "../utils/config";
+import { getAuthStatus } from "../backend/auth";
+import { hasUserPassword } from "../backend/config";
 import { redirectToIndex } from "../utils/redirects";
 import { useCookies } from "react-cookie";
 import { useRouter } from "next/router";
@@ -39,6 +39,9 @@ const LoginPage: FC = () => {
   const [password, setPassword] = useState("");
   const [cookies, setCookie] = useCookies(["authToken"]);
   const passwordFieldRef = useRef() as MutableRefObject<HTMLInputElement>;
+
+  //silences eslint unused var err
+  cookies.authToken;
 
   useEffect(() => {
     passwordFieldRef.current.focus();

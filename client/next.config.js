@@ -11,7 +11,7 @@ const fse = require("fs-extra");
     const videoList = await fse.readJSON(videoListPath);
     if (!fse.existsSync(backupDir))
       await fse.mkdir(backupDir);
-    fse.writeJSON(backupDir + "video_list.json", videoList);
+    await fse.writeJSON(backupDir + "video_list.json", videoList);
   }
 })();
 

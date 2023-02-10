@@ -1,7 +1,7 @@
 // backend only config/storage code
 
-import { Video } from "./types";
-import { booleanify } from "./utils";
+import { Video } from "../utils/types";
+import { booleanify } from "../utils/utils";
 import config from "config";
 import fse from "fs-extra";
 
@@ -72,7 +72,7 @@ export const getVideoList = async (): Promise<Video[]> => {
 
 export const createVideoListBackup = async (): Promise<void> => {
   const videoList = await getVideoList();
-  await fse.writeJSON(await getBackupPath(), videoList);
+  await fse.writeJSON(await getBackupVideoListPath(), videoList);
 };
 
 export const deleteThumbnail = async (thumbnailName: string): Promise<void> => {
@@ -80,7 +80,7 @@ export const deleteThumbnail = async (thumbnailName: string): Promise<void> => {
 };
 
 const checkCreateDir = async (dir: string): Promise<string> => {
-  if (!fse.existsSync(dir))
+  if (!fse.existsSync(dir) || !await fse.pathExists(dir))
     await fse.mkdir(dir);
   return dir;
 };

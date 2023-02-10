@@ -1,6 +1,6 @@
 import { randomBytes, scryptSync } from "crypto";
 
-import { AuthStatus } from "./types";
+import { AuthStatus } from "../utils/types";
 import { NextApiRequest, NextPageContext } from "next";
 import { getUserPassword } from "./config";
 

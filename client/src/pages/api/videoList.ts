@@ -5,8 +5,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { Video } from "../../utils/types";
-import { getVideoList, setVideoList } from "../../utils/config";
-import { isTokenValid } from "../../utils/auth";
+import { getVideoList, setVideoList } from "../../backend/config";
+import { isTokenValid } from "../../backend/auth";
 
 const clipList = (async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
 

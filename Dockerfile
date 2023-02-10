@@ -13,7 +13,7 @@ RUN yarn --prod
 ENV NODE_CONFIG_DIR=/config
 ENV PORT 80
 EXPOSE 80
-VOLUME /clips
+VOLUME /snacksable
 VOLUME /config
 
 CMD yarn start -p ${PORT}

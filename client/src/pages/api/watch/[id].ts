@@ -7,8 +7,8 @@ import * as mime from "mime-types";
 import { NextApiRequest, NextApiResponse } from "next";
 import { NodeHeaders } from "next/dist/server/web/types";
 import { Video } from "../../../utils/types";
-import { getVideoList } from "../../../utils/config";
-import { isTokenValid } from "../../../utils/auth";
+import { getVideoList } from "../../../backend/config";
+import { isTokenValid } from "../../../backend/auth";
 import fs from "fs";
 
 const getVideoByID = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {

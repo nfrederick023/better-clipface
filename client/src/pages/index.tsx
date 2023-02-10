@@ -8,9 +8,9 @@ import { NextPageContext, Redirect } from "next";
 import { redirectTo401, redirectToLogin } from "../utils/redirects";
 import CopyVideoLink, { CopyTextContainer } from "../components/CopyLink";
 
-import { getAuthStatus } from "../utils/auth";
-import { getPrivateLibrary, hasUserPassword } from "../utils/config";
-import { listVideos } from "../utils/listVideos";
+import { getAuthStatus } from "../backend/auth";
+import { getPrivateLibrary, hasUserPassword } from "../backend/config";
+import { listVideos } from "../backend/listVideos";
 import { toNumber } from "lodash";
 import { useCookies } from "react-cookie";
 import Container from "../components/Container";
