@@ -3,12 +3,12 @@ import { expect, test } from "@playwright/test";
 import fse from "fs-extra";
 
 test.beforeAll(() => {
-  spawn("next dev", [], { env: { PASSWORD: "", PRIVATE_LIBRARY: "true", APP_PATH: "/test", NODE_ENV: "development", PORT: "8000" }, shell: true });
+  spawn("next dev", [], { env: { PASSWORD: "undefined", PRIVATE_LIBRARY: "true", APP_PATH: "/test", NODE_ENV: "development", PORT: "8000" }, shell: true });
 });
 
 test.beforeEach(async () => {
-  const defaultVideoList = await fse.readJSON("/test/assets/video_list_default.json");
-  fse.writeJSONSync("/test/assets/video_list.json", defaultVideoList);
+  const defaultVideoList = await fse.readJSON("/test/config/video_list_default.json");
+  fse.writeJSONSync("/test/config/video_list.json", defaultVideoList);
 });
 
 test.afterAll(async ({ page }) => {

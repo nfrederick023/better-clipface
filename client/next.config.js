@@ -4,7 +4,7 @@ const fse = require("fs-extra");
 
 // backs up video list on startup
 (async function main () {
-  const assetsPath = config.get("app_path") + "/assets/";
+  const assetsPath = config.get("app_path") + "/config/";
   const videoListPath = assetsPath + "video_list.json"
   const backupDir = assetsPath + "backups/"
   if (fse.existsSync(videoListPath)) {

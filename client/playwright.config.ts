@@ -6,16 +6,16 @@ const baseURL = `http://localhost:${PORT}`;
 const testMatch = [
   "AuthPrivateList.spec.ts",
   "AuthPublicList.spec.ts",
+  "IndexPage.spec.ts",
+  "LoginAPI.spec.ts",
   "LogInLogOut.spec.ts",
   "NoAuthPrivateList.spec.ts",
   "NoAuthPublicList.spec.ts",
-  "VideoSettings.spec.ts",
-  "IndexPage.spec.ts",
-  "WatchPage.spec.ts",
-  "WatchAPI.spec.ts",
   "ThumbAPI.spec.ts",
   "VideoListAPI.spec.ts",
-  "LoginAPI.spec.ts"
+  "VideoSettings.spec.ts",
+  "WatchAPI.spec.ts",
+  "WatchPage.spec.ts",
 ];
 
 const config: PlaywrightTestConfig = {

@@ -7,8 +7,8 @@ test.beforeAll(() => {
 });
 
 test.beforeEach(async () => {
-  const defaultVideoList = await fse.readJSON("/test/assets/video_list_default.json");
-  fse.writeJSONSync("/test/assets/video_list.json", defaultVideoList);
+  const defaultVideoList = await fse.readJSON("/test/config/video_list_default.json");
+  fse.writeJSONSync("/test/config/video_list.json", defaultVideoList);
 });
 
 test.afterAll(async ({ page }) => {
@@ -75,6 +75,7 @@ test("Should be able to see setting changes when reloading pages", async ({ page
   expect((await page.locator(".fa-lock").all()).length).toBe(3);
 
   await page.reload();
+  await page.waitForTimeout(1500);
   expect((await page.locator(".fa-lock").all()).length).toBe(3);
 });
 

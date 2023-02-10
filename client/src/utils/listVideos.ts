@@ -59,7 +59,6 @@ const createThumbnails = async (videos: Video[]): Promise<void> => {
 // removes any videos not found in state
 const cleanState = async (): Promise<void> => {
   const videoList = await getVideoList();
-  const defaultVideoList = await fse.readJSON("/test/assets/video_list_default.json");
   const files = fse.readdirSync(await getVideosPath());
   await setVideoList(videoList.filter(video => files.includes(video.fileName)));
 };

@@ -6,7 +6,7 @@ import config from "config";
 import fse from "fs-extra";
 
 export const getUserPassword = (): string | undefined => {
-  return config.has("password") ? config.get("password") : undefined;
+  return config.has("password") ? booleanify(config.get("password")) ? config.get("password") : undefined : undefined;
 };
 
 export const hasUserPassword = (): boolean => {
@@ -29,7 +29,7 @@ export const getPath = async (): Promise<string> => {
 };
 
 export const getAssetsPath = async (): Promise<string> => {
-  const dir = await getPath() + "/assets/";
+  const dir = await getPath() + "/config/";
   return checkCreateDir(dir);
 };
 

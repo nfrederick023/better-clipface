@@ -8,8 +8,8 @@ test.beforeAll(() => {
 });
 
 test.beforeEach(async () => {
-  const defaultVideoList = await fse.readJSON("/test/assets/video_list_default.json");
-  fse.writeJSONSync("/test/assets/video_list.json", defaultVideoList);
+  const defaultVideoList = await fse.readJSON("/test/config/video_list_default.json");
+  fse.writeJSONSync("/test/config/video_list.json", defaultVideoList);
 });
 
 test.afterAll(async ({ page }) => {

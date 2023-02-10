@@ -83,7 +83,7 @@ const MyApp: NextPage<MyAppProps> = ({ ...props }: MyAppProps): ReactElement => 
 MyApp.getInitialProps = async (ctx: NextPageContext): Promise<MyAppProps> => {
   const context = ctx as unknown as AppContext;
   const request = context.ctx.req as Request;
-  return { allCookies: request.cookies };
+  return { allCookies: request?.cookies };
 };
 
 export default MyApp;

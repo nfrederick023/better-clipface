@@ -1,4 +1,3 @@
-import { Video } from "../utils/types";
 import { exec, spawn } from "node:child_process";
 import { expect, test } from "@playwright/test";
 import fse from "fs-extra";
@@ -8,16 +7,14 @@ test.beforeAll(() => {
 });
 
 test.beforeEach(async () => {
-  const defaultVideoList = await fse.readJSON("/test/assets/video_list_default.json");
-  fse.writeJSONSync("/test/assets/video_list.json", defaultVideoList);
+  const defaultVideoList = await fse.readJSON("/test/config/video_list_default.json");
+  fse.writeJSONSync("/test/config/video_list.json", defaultVideoList);
 });
 
 test.afterAll(async ({ page }) => {
   exec("npx kill-port 8000");
   await page.waitForTimeout(5000);
 });
-
-const authToken = "d95146ef88e5bfcd3c33ccb610c07a3fde2b3ab47c00a7185b68c32cc214572db32c45a31b0e7feca45133d369a29ab8";
 
 test("Should recieve a 200", async ({ page, request }) => {
   await page.goto("/");
@@ -40,7 +37,7 @@ test("Should recieve a 401", async ({ page, request }) => {
 test("Should recieve a 400", async ({ page, request }) => {
   exec("npx kill-port 8000");
   await page.waitForTimeout(5000);
-  spawn("next dev", [], { env: { PASSWORD: "", PRIVATE_LIBRARY: "true", APP_PATH: "/test", NODE_ENV: "development", PORT: "8000" }, shell: true });
+  spawn("next dev", [], { env: { PASSWORD: "undefined", PRIVATE_LIBRARY: "true", APP_PATH: "/test", NODE_ENV: "development", PORT: "8000" }, shell: true });
 
   await page.goto("/");
   const req = await request.post("/api/login", { data: { password: "test" } });
