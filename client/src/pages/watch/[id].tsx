@@ -166,7 +166,7 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
           <StyledMeta property="og:type" value="video.other" />
           <StyledMeta property="og:site_name" value={publicRuntimeConfig.pageTitle} />
           <StyledMeta property="og:url" value={currentURL} />
-          <StyledMeta property="og:title" value={props.selectedVideo.fileName} />
+          <StyledMeta property="og:title" value={props.selectedVideo.name} />
           <StyledMeta property="og:image" content={fullThumbSrc} />
           <StyledMeta property="og:image:secure_url" content={fullThumbSrc} />
           <StyledMeta property="og:image:type" content="image/jpeg" />
