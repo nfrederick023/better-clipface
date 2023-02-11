@@ -3,10 +3,8 @@
 #
 # See: https://github.com/lorenwest/node-config/wiki/Environment-Variables#custom-environment-variables
 #
-clips_path = "CLIPFACE_CLIPS_PATH"
-user_password = "CLIPFACE_USER_PASSWORD"
-secure_cookies = "CLIPFACE_SECURE_COOKIES"
-clips_page_title = "CLIPFACE_CLIPS_PAGE_TITLE"
-header_title = "CLIPFACE_HEADER_TITLE"
-pagination = "CLIPFACE_PAGINATION"
-page_title = "CLIPFACE_SITE_TITLE"
+app_path = "APP_PATH"
+password = "PASSWORD"
+private_library = "PRIVATE_LIBRARY"
+thumbnail_size = "THUMBNAIL_SIZE"
+page_title = "PAGE_TITLE"

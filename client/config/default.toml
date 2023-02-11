@@ -1,12 +1,11 @@
 #
-# Default config for Clipface
+# Default config
 #
 # Each option is documented in README.md
 #
-clips_path = "/clips"
-# user_password = 
+app_path = "/snacksable"
+password = "test"
 secure_cookies = true
-# clips_page_title =
-header_title = "Snacksable"
-pagination = true
+private_library = true
+thumbnail_size = "1920x1080"
 page_title = "Snacksable"
