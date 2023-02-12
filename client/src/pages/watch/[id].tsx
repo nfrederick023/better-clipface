@@ -108,15 +108,11 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
   const videoRef = useRef() as MutableRefObject<HTMLVideoElement>;
   const [cookies, setCookie] = useCookies(["theaterMode", "videoVolume"]);
   const [video, setVideo] = useState(props.selectedVideo);
-  const videoTitle = video?.fileName.split(".").slice(0, -1).join(".");
 
   // The video volume can't be set directly on the element for some reason, so
   // we set it immediately after rendering
 
   useEffect(() => {
-    if (video) {
-      document.title = videoTitle + " - " + publicRuntimeConfig.pageTitle;
-    }
     if (videoRef.current) {
       videoRef.current.volume = parseFloat(cookies.videoVolume);
     }
@@ -162,7 +158,7 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
     <>
       <>
         <Head>
-          <title>{videoTitle + " - " + publicRuntimeConfig.pageTitle}</title>
+          <title>{video.name + " - " + publicRuntimeConfig.pageTitle}</title>
           <StyledMeta property="og:type" value="video.other" />
           <StyledMeta property="og:site_name" value={publicRuntimeConfig.pageTitle} />
           <StyledMeta property="og:url" value={currentURL} />
@@ -242,7 +238,7 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
 
       <Container>
         <VideoInfo>
-          <h1 className="title is-4">{videoTitle}</h1>
+          <h1 className="title is-4">{video.name}</h1>
           <h2 className="subtitle is-6">
             Uploaded <TimeAgo date={video.saved} />
             <span style={{ margin: "0px 10px" }}>•</span>

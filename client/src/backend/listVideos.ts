@@ -1,4 +1,4 @@
-import { createVideoListBackup, deleteThumbnail, getPath, getThumbnailsPath, getThumnailSize, getUserPassword, getVideoList, getVideosPath, setVideoList } from "./config";
+import { createVideoListBackup, deleteThumbnail, getThumbnailsPath, getThumnailSize, getUserPassword, getVideoList, getVideosPath, setVideoList } from "./config";
 import glob from "glob";
 import path from "path";
 import seedrandom from "seedrandom";
@@ -12,7 +12,6 @@ ffmpeg.setFfprobePath(ffprobeStatic.path);
 ffmpeg.setFfmpegPath(pathToFfmpeg ?? "");
 
 export const listVideos = async (): Promise<Video[]> => {
-  await backwardsCompatibility();
   await createVideoListBackup();
 
   let videos = glob.sync(`${await getVideosPath()}/*.@(mkv|mp4|webm|mov|mpeg|avi|wmv|json)`);
@@ -33,66 +32,6 @@ export const listVideos = async (): Promise<Video[]> => {
 
   createThumbnails(videoDetails);
   return videoDetails;
-};
-
-interface OldVideo {
-  name: string,
-  size: number,
-  saved: number,
-  created: number,
-  title: string,
-  description: string,
-  clipName: string,
-  requireAuth: boolean,
-  isFavorite: boolean,
-  id: string
-}
-
-const backwardsCompatibility = async (): Promise<void> => {
-  // convert state.json to video_list.json
-  if (fse.existsSync(await getPath() + "/assets/state.json")) {
-    const oldVideos = await fse.readJSON(await getPath() + "/assets/state.json") as OldVideo[];
-    const videoList: Video[] = [];
-
-
-    oldVideos.forEach(async video => {
-      if (fse.existsSync(await getPath() + "/" + video.name)) {
-        await fse.move(await getPath() + "/" + video.name, await getVideosPath() + video.name);
-      }
-
-      const filePath = path.join(await getVideosPath() + video.name);
-      const name = video.name.split(".")[0];
-      const thumbnailPath = path.join(await getThumbnailsPath() + name + ".jpg");
-
-      const newVideoState: Video = {
-        fileName: video.name,
-        name,
-        size: video.size,
-        saved: video.saved,
-        created: video.created,
-        filePath,
-        thumbnailPath,
-        description: "",
-        requireAuth: video.requireAuth,
-        isFavorite: video.isFavorite,
-        id: video.id
-      };
-      videoList.push(newVideoState);
-    });
-
-    await setVideoList(videoList);
-    await createVideoListBackup();
-
-    await fse.rm(await getPath() + "/assets/state.json");
-  }
-
-  if (fse.existsSync(await getPath() + "/assets/state_backup.json")) {
-    await fse.rm(await getPath() + "/assets/state_backup.json");
-  }
-
-  if (fse.existsSync(await getPath() + "/assets")) {
-    await fse.rmdir(await getPath() + "/assets");
-  }
 };
 
 const createThumbnails = async (videos: Video[]): Promise<void> => {
@@ -128,7 +67,7 @@ const cleanState = async (): Promise<void> => {
 // gets a video from videoList, creates one if not found
 const getCreateVideo = async (filePath: string): Promise<Video | null> => {
   const fileName = path.basename(filePath);
-  const name = fileName.split(".")[0];
+  const name = path.parse(fileName).name;
   const videoStats = await fse.stat(filePath);
   const videoList = await getVideoList();
   const thumbnailPath = path.join(await getThumbnailsPath() + name + ".jpg");
@@ -139,13 +78,14 @@ const getCreateVideo = async (filePath: string): Promise<Video | null> => {
   if (videoState) {
 
     // reindex if any of the following values don't match for whatever reason
-    if (videoState.size !== videoStats.size || videoState.saved !== videoStats.mtimeMs || videoState.created !== videoStats.birthtimeMs || videoState.filePath !== filePath) {
+    if (videoState.size !== videoStats.size || videoState.saved !== videoStats.mtimeMs || videoState.created !== videoStats.birthtimeMs || videoState.filePath !== filePath || videoState.name !== name) {
       const newVideoList = videoList.filter((video) => { return video.fileName !== fileName; });
       const newVideoState: Video = {
         ...videoState,
         size: videoStats.size,
         saved: videoStats.mtimeMs,
         created: videoStats.birthtimeMs ? videoStats.birthtimeMs : videoState.created,
+        name,
         filePath,
         thumbnailPath,
       };

@@ -64,7 +64,7 @@ const MyApp: NextPage<MyAppProps> = ({ ...props }: MyAppProps): ReactElement => 
   };
   if (typeof props.allCookies?.theaterMode === "undefined") setCookies("theaterMode", false);
   if (typeof props.allCookies?.videoVolume === "undefined") setCookies("videoVolume", 1);
-  if (typeof props.allCookies?.videosPerPage === "undefined") setCookies("videosPerPage", 40);
+  if (typeof props.allCookies?.videosPerPage === "undefined") setCookies("videosPerPage", 20);
   if (typeof props.allCookies?.isDarkMode === "undefined") setCookies("isDarkMode", true);
   if (typeof props.allCookies?.authToken === "undefined") setCookies("authToken", "");
   return (
