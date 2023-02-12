@@ -89,7 +89,7 @@ const Layout: FC<LayoutProps> = ({ children, hasAuth }) => {
   const [cookies, setCookies] = useCookies(["isDarkMode", "authToken"]);
 
   const onSignOut = (): void => {
-    setCookies("authToken", "", { path: "/" });
+    setCookies("authToken", "", { path: "/", sameSite: "strict", maxAge: 31536000, expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)) });
     router.push("/login");
   };
 
@@ -102,11 +102,11 @@ const Layout: FC<LayoutProps> = ({ children, hasAuth }) => {
   };
 
   const toggleDarkMode = (): void => {
-    setCookies("isDarkMode", !booleanify(cookies.isDarkMode), { path: "/" });
+    setCookies("isDarkMode", !booleanify(cookies.isDarkMode), { path: "/", sameSite: "strict", maxAge: 31536000, expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)) });
   };
 
   if (!hasAuth && cookies.authToken) {
-    setCookies("authToken", "", { path: "/" });
+    setCookies("authToken", "", { path: "/", sameSite: "strict", maxAge: 31536000, expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)) });
   }
 
   return (

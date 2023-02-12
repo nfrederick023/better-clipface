@@ -137,11 +137,11 @@ const WatchPage: FC<WatchPageProps> = ({ ...props }) => {
     } else {
       volume = videoRef.current.volume;
     }
-    setCookie("videoVolume", volume, { path: "/" });
+    setCookie("videoVolume", volume, { path: "/", sameSite: "strict", maxAge: 31536000, expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)) });
   };
 
   const toggleTheaterMode = (): void => {
-    setCookie("theaterMode", !booleanify(cookies.theaterMode), { path: "/" });
+    setCookie("theaterMode", !booleanify(cookies.theaterMode), { path: "/", sameSite: "strict", maxAge: 31536000, expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)) });
   };
 
   const videoProps = {

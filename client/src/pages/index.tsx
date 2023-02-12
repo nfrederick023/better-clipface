@@ -183,7 +183,7 @@ const Index: FC<IndexPage> = ({ authStatus, allVideos, currentPage, setCurrentPa
   };
 
   const handleChangeVideosPerPage = (newVideosPerPage: number): void => {
-    setCookies("videosPerPage", newVideosPerPage < 1 ? 0 : newVideosPerPage, { path: "/" });
+    setCookies("videosPerPage", newVideosPerPage < 1 ? 0 : newVideosPerPage, { path: "/", sameSite: "strict", maxAge: 31536000, expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)) });
   };
 
   const updateVideoList = (selectedVideo: Video): void => {
