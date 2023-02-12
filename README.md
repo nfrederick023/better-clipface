@@ -4,9 +4,11 @@
 
 ## Why "Better" Clipface?
 
-- Cleaned up UI/UX
 - Added dark mode (with toggle)
-- Fixed Discord not embedding files over 100MB in size (soon™)
+- Added support for Twitter embed
+- Cleaned up UI/UX
+- Converted to TypeScript
+- Fixed Discord not allowing playback of embeds over 100MB in size
 
 ## Features
 
@@ -31,32 +33,31 @@
 First of all pull the Docker image:
 
 ```
-$ docker pull snnacks/better-clipface
+$ docker pull nfrederick023/better-clipface
 ```
 
-Very simple usage, no authentication, port 80:
+Very simple usage, no authentication, port 3535:
 
 ```
 docker run -d \
   --name clipface \
   -v /host/path/to/clips:/clips \
-  -p 80:80 \
-  snnacks/better-clipface:latest
+  -p 3535:80 \
+  nfrederick023/better-clipface:latest
 ```
 
 For more advanced usage, you need to provide Clipface with some
 configuration. (See [Configuration](#configuration).) Here is an example
-where we require authentication and set the clip list page title to "Bob's
-clips":
+where we require authentication and set the clip list page title to "Streamify":
 
 ```
 docker run -d \
   --name clipface \
-  -v /host/path/to/clips:/clips \
-  -p 80:80 \
-  -e CLIPFACE_USER_PASSWORD="password123" \
-  -e CLIPFACE_CLIPS_PAGE_TITLE="Bob's clips" \
-  snnacks/better-clipface:latest
+  -v /host/path/to/clips:/snacksable \
+  -p 3535:80 \
+  -e PASSWORD="password123" \
+  -e PAGE_TITLE="Streamify" \
+  nfrederick023/better-clipface:latest
 ```
 
 ## Configuration
@@ -75,57 +76,27 @@ simply omit it from your config file.
 
 List of config parameters:
 
-- `clips_path` - The absolute path of the directory containing the clips
-  that Clipface should host. This defaults to `"/clips"`, which is a
-  convenient value for Docker images.
+- `app_path` - The absolute path of the directory containing the clips
+  that Clipface should host. This defaults to `"/snacksable"`.
 
-  **Default value**: `"/clips"`<br />
-  **Environment variable**: `CLIPFACE_CLIPS_PATH`
+  **Default value**: `"/snacksable"`<br />
+  **Environment variable**: `CLIPS_PATH`
 
-- `pagination` - If true, the clip list will be split into pages. This is
-  highly recommended if your clip count is in the hundreds, as it will hugely
-  improve the responsiveness of the site. The end user can choose the amount of
-  clips displayed per page.
-
-  **Default value**: `true`<br />
-  **Environment variable**: `CLIPFACE_PAGINATION`
-
-- `user_password` - A password used to protect this Clipface instance. If
+- `password` - A password used to protect this Clipface instance. If
   set, users must input this password before they can watch any clips or see
   the list of clips. By default this parameter is not set, which will allow
   anybody to browse and watch all your clips.
 
   **Default value**: *(unset)*<br />
-  **Environment variable**: `CLIPFACE_USER_PASSWORD`
+  **Environment variable**: `PASSWORD`
 
-- `secure_cookies` - If set to true (which is the default value), the
-  "secure" setting will be used for the authication cookie, which means the
-  cookie will only be included when using SSL (HTTPS). If you are not using
-  SSL, you need to set this option to false, or authentication won't work.
-
-  **Default value**: `true`<br />
-  **Environment variable**: `CLIPFACE_SECURE_COOKIES`
-
-- `header_title` - Title displayed in the header on all pages
-
-  **Default value**: `"Clippy Mc. Clipface"`<br />
-  **Environment variable**: `CLIPFACE_HEADER_TITLE`
-
-- `clips_page_title` - Title displayed on the clip list page
+- `page_title` - Title displayed on the clip list page
 
   If not set (which is the default), no title will be displayed and the
   header will be significantly smaller.
 
   **Default value**: *(unset)*<br />
-  **Environment variable**: `CLIPFACE_CLIPS_PAGE_TITLE`
-  
-- `page_title` - Site-wide title seen on the browser tab
-
-  If not set (which is the default), the browser will just display
-  the URL of the site.
-
-  **Default value**: *(unset)*<br />
-  **Environment variable**: `CLIPFACE_SITE_TITLE`
+  **Environment variable**: `PAGE_TITLE`
 
 ## NGINX reverse proxy with SSL
 
