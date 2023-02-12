@@ -39,7 +39,7 @@ $ docker pull nfrederick023/better-clipface
 Very simple usage, no authentication, port 3535:
 
 ```
-docker run -d \
+docker run -d --restart unless-stopped \
   --name clipface \
   -v /host/path/to/clips:/clips \
   -p 3535:80 \
@@ -51,7 +51,7 @@ configuration. (See [Configuration](#configuration).) Here is an example
 where we require authentication and set the clip list page title to "Streamify":
 
 ```
-docker run -d \
+docker run -d --restart unless-stopped \
   --name clipface \
   -v /host/path/to/clips:/snacksable \
   -p 3535:80 \
@@ -80,7 +80,7 @@ List of config parameters:
   that Clipface should host. This defaults to `"/snacksable"`.
 
   **Default value**: `"/snacksable"`<br />
-  **Environment variable**: `CLIPS_PATH`
+  **Environment variable**: `APP_PATH`
 
 - `password` - A password used to protect this Clipface instance. If
   set, users must input this password before they can watch any clips or see
