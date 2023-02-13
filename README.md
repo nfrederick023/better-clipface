@@ -13,7 +13,6 @@
 ## Features
 
 - Simple, intuitive user interface
-- No config required, hosts your existing clip folder
 - Super simple deployement with official Docker image
 - Simple but informative clip list with real time search
 - Optional authentication to protect your clips
@@ -79,24 +78,36 @@ List of config parameters:
 - `app_path` - The absolute path of the directory containing the clips
   that Clipface should host. This defaults to `"/snacksable"`.
 
-  **Default value**: `"/snacksable"`<br />
+  **Default value**: `"/data"`<br />
   **Environment variable**: `APP_PATH`
 
-- `password` - A password used to protect this Clipface instance. If
-  set, users must input this password before they can watch any clips or see
-  the list of clips. By default this parameter is not set, which will allow
-  anybody to browse and watch all your clips.
-
-  **Default value**: *(unset)*<br />
-  **Environment variable**: `PASSWORD`
-
-- `page_title` - Title displayed on the clip list page
-
-  If not set (which is the default), no title will be displayed and the
+  - `page_title` - Title displayed on the clip list page. If not set
+  (which is the default), no title will be displayed and the
   header will be significantly smaller.
 
   **Default value**: *(unset)*<br />
   **Environment variable**: `PAGE_TITLE`
+
+- `password` - A password used to protect your Clipface instance. By
+  default this is enabled because there is another variable below which
+  when disabled allows for a more secure way to have a public facing library.
+
+  **Default value**: `adminadmin`<br />
+  **Environment variable**: `PASSWORD`
+
+- `thumbnail_size` - Used to adjust the size of the thumbnails generated.
+  We recommend using a size that matches an aspect ratio of 16:9 as that
+  is the aspect ratio of the viewport when embedded.
+
+  **Default value**: `1280x720`<br />
+  **Environment variable**: `THUMBNAIL_SIZE`
+
+- `private_library` - Used to adjust whether or not your entire library of
+  videos can be publicly accessible. If enabled, users not logged in can view
+  all of your videos, but cannot adjust their favorite or privacy status.
+
+  **Default value**: `true`<br />
+  **Environment variable**: `PRIVATE_LIBRARY`
 
 ## NGINX reverse proxy with SSL
 

@@ -9,5 +9,5 @@ yarn build
 cd ..
 
 bash ./bundle-client.sh
-docker build --network=host -t nfrederick023/better-clipface:1.01 .
+docker build --network=host -t nfrederick023/better-clipface:latest -t nfrederick023/better-clipface:1.02 .
 rm client/docker-bundle.tgz
