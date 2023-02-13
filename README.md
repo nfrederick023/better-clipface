@@ -2,7 +2,7 @@
 
 **Better Clipface** is a fork of Clipface with an improved UI/UX and greater functionality.
 
-# Features
+## Features
 
 - Search feature with real-time results
 - Simple user interface with light and dark mode support
@@ -10,15 +10,15 @@
 - "Favorite" feature so the best videos are always easy to find
 - Video thumbnail generation
 
-# Preview
+## Preview
 
 ![Watch page](screenshots/watch-page.png)
 
 ![Video list](screenshots/video-list.png)
 
-# Getting Started
+## Getting Started
 
-## Docker
+### Using Docker
 
 ```
 docker run -d --restart unless-stopped \
@@ -30,7 +30,7 @@ docker run -d --restart unless-stopped \
   nfrederick023/better-clipface:latest
 ```
 
-# Configuration
+## Configuration
 
 Better Clipface uses [node-config](https://github.com/lorenwest/node-config) for
 configuration management. This means that Clipface can be configured using a
@@ -45,7 +45,7 @@ List of config parameters:
   **Default value**: `"/data"`<br />
   **Environment variable**: `APP_PATH`
 
-  - `page_title` - Title displayed on the clip list page. If not set
+- `page_title` - Title displayed on the clip list page. If not set
   (which is the default), no title will be displayed and the
   header will be significantly smaller.
 
