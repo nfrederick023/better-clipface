@@ -4,9 +4,11 @@ FROM node:alpine
 
 ADD client/docker-bundle.tgz /
 
-WORKDIR /app
+ADD client/package.json /tmp/package.json
+RUN cd /tmp && yarn --prod
+RUN mkdir -p /app && cp -a /tmp/node_modules /app/
 
-RUN yarn --prod
+WORKDIR /app
 
 # Configuration
 
