@@ -12,7 +12,7 @@
 
 ## Preview
 
-![Watch page](screenshots/watch-page.png)
+![Watch page](screenshots/video-page.png)
 
 ![Video list](screenshots/video-list.png)
 
@@ -39,20 +39,19 @@ deployments, using environment variables is the most convenient option.
 
 List of config parameters:
 
-- `app_path` - The absolute path of the directory containing the clips
-  that Clipface should host. This defaults to `"/data"`.
+- `app_path` - Path of the directory where Better Clipface will make
+  it's files. A "videos" folder will be created and this is where you will
+  want to place your video files You want Better Clipface to index.
 
   **Default value**: `"/data"`<br />
   **Environment variable**: `APP_PATH`
 
-- `page_title` - Title displayed on the clip list page. If not set
-  (which is the default), no title will be displayed and the
-  header will be significantly smaller.
+- `page_title` - Title displayed on the clip list page and in the browser tab.
 
   **Default value**: `Better Clipface`<br />
   **Environment variable**: `PAGE_TITLE`
 
-- `password` - A password used to protect your Better Clipface instance. By
+- `password` - Used to protect your Better Clipface instance. By
   default this is enabled because there is another variable below which
   when disabled allows for a more secure way to have a public facing library.
 
