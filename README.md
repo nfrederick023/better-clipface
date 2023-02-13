@@ -103,7 +103,7 @@ List of config parameters:
   **Environment variable**: `THUMBNAIL_SIZE`
 
 - `private_library` - Used to adjust whether or not your entire library of
-  videos can be publicly accessible. If enabled, users not logged in can view
+  videos can be publicly accessible. If set to false, users not logged in can view
   all of your videos, but cannot adjust their favorite or privacy status.
 
   **Default value**: `true`<br />
