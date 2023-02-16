@@ -4,11 +4,11 @@
 
 ## Features
 
-- Search feature with real-time results
-- Simple user interface with light and dark mode support
-- Embed support thanks to the use of Open Graph meta tags
-- "Favorite" feature so the best videos are always easy to find
 - Video thumbnail generation
+- Search with real-time results
+- Simple user interface with light and dark mode support
+- Embed support for sites such as Twitter, Discord, etc.
+- "Favorites" so the best videos are always easy to find
 
 ## Preview
 
@@ -23,10 +23,10 @@
 ```
 docker run -d --restart unless-stopped \
   --name better-clipface \
-  -v /host/path/to/clips:/data \
+  -v /host/path/to/directory:/data \
   -p 3535:80 \
-  -e PASSWORD="password123" \
-  -e PAGE_TITLE="Streamify" \
+  -e PASSWORD="password" \
+  -e PAGE_TITLE="Title" \
   nfrederick023/better-clipface:latest
 ```
 
@@ -41,7 +41,7 @@ List of config parameters:
 
 - `app_path` - Path of the directory where Better Clipface will make
   it's files. A "videos" folder will be created and this is where you will
-  want to place your video files You want Better Clipface to index.
+  want to place the video files you want Better Clipface to index.
 
   **Default value**: `"/data"`<br />
   **Environment variable**: `APP_PATH`
